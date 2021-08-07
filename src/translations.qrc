@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/">
+        <file>i18n/recon-plotter_ru.qm</file>
+        <file>i18n/recon-plotter_ua.qm</file>
+    </qresource>
+</RCC>
