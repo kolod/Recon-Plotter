@@ -23,7 +23,12 @@ DataFile::DataFile(QString filename, QObject *parent)
 	, mModified(false)
 {}
 
-bool DataFile::save() const
+bool DataFile::save()
+{
+	return saveAs(mFileName);
+}
+
+bool DataFile::saveAs(QString filename)
 {
 	return false;
 }

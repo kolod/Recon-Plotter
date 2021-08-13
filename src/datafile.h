@@ -41,7 +41,8 @@ public:
 	qreal maxY() {return mMaxY;}
 	QString fileName() const {return mFileName;}
 
-	bool save() const;
+	bool save();
+	bool saveAs(QString filename = "");
 	bool open();
 	bool isModified() const {return mModified;}
 	void setModified() {

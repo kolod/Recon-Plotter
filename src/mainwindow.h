@@ -42,8 +42,14 @@ public:
 
 private slots:
 	void closeEvent(QCloseEvent *event);
+	bool openFile(const QString filename);
 	bool importReconTextFile(QString filename);
+	void updateFileMenu();
+	void updatePlotMenu();
 	void updateWindowMenu();
+	void actionOpen();
+	void actionSave();
+	void actionSaveAs();
 	void actionImport();
 
 private:
