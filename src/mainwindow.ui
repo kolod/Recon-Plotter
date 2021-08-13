@@ -4,10 +4,10 @@
  <widget class="QMainWindow" name="MainWindow">
   <property name="geometry">
    <rect>
-    <x>0</x>
-    <y>0</y>
-    <width>566</width>
-    <height>424</height>
+	<x>0</x>
+	<y>0</y>
+	<width>566</width>
+	<height>424</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -15,105 +15,105 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
-    <property name="leftMargin">
-     <number>0</number>
-    </property>
-    <property name="topMargin">
-     <number>0</number>
-    </property>
-    <property name="rightMargin">
-     <number>0</number>
-    </property>
-    <property name="bottomMargin">
-     <number>0</number>
-    </property>
-    <property name="spacing">
-     <number>0</number>
-    </property>
-    <item row="0" column="0">
-     <widget class="QMdiArea" name="mdiArea"/>
-    </item>
+	<property name="leftMargin">
+	 <number>0</number>
+	</property>
+	<property name="topMargin">
+	 <number>0</number>
+	</property>
+	<property name="rightMargin">
+	 <number>0</number>
+	</property>
+	<property name="bottomMargin">
+	 <number>0</number>
+	</property>
+	<property name="spacing">
+	 <number>0</number>
+	</property>
+	<item row="0" column="0">
+	 <widget class="QMdiArea" name="mdiArea"/>
+	</item>
    </layout>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
-    <rect>
-     <x>0</x>
-     <y>0</y>
-     <width>566</width>
-     <height>21</height>
-    </rect>
+	<rect>
+	 <x>0</x>
+	 <y>0</y>
+	 <width>566</width>
+	 <height>21</height>
+	</rect>
    </property>
    <widget class="QMenu" name="menuFile">
-    <property name="sizePolicy">
-     <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-      <horstretch>0</horstretch>
-      <verstretch>0</verstretch>
-     </sizepolicy>
-    </property>
-    <property name="title">
-     <string>&amp;File</string>
-    </property>
-    <widget class="QMenu" name="menuOpenRecent">
-     <property name="title">
-      <string>Open recent</string>
-     </property>
-    </widget>
-    <addaction name="actionOpen"/>
-    <addaction name="menuOpenRecent"/>
-    <addaction name="actionSave"/>
-    <addaction name="actionSaveAs"/>
-    <addaction name="separator"/>
-    <addaction name="actionImport"/>
-    <addaction name="separator"/>
-    <addaction name="actionQuit"/>
+	<property name="sizePolicy">
+	 <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+	  <horstretch>0</horstretch>
+	  <verstretch>0</verstretch>
+	 </sizepolicy>
+	</property>
+	<property name="title">
+	 <string>&amp;File</string>
+	</property>
+	<widget class="QMenu" name="menuOpenRecent">
+	 <property name="title">
+	  <string>Open recent</string>
+	 </property>
+	</widget>
+	<addaction name="actionOpen"/>
+	<addaction name="menuOpenRecent"/>
+	<addaction name="actionSave"/>
+	<addaction name="actionSaveAs"/>
+	<addaction name="separator"/>
+	<addaction name="actionImport"/>
+	<addaction name="separator"/>
+	<addaction name="actionQuit"/>
    </widget>
    <widget class="QMenu" name="menuPlot">
-    <property name="title">
-     <string>&amp;Plot</string>
-    </property>
-    <addaction name="actionRefresh"/>
+	<property name="title">
+	 <string>&amp;Plot</string>
+	</property>
+	<addaction name="actionRefresh"/>
    </widget>
    <widget class="QMenu" name="menuView">
-    <property name="title">
-     <string>&amp;View</string>
-    </property>
-    <addaction name="actionFullscreenMode"/>
-    <addaction name="separator"/>
-    <addaction name="actionSignals"/>
-    <addaction name="actionPlotSettings"/>
+	<property name="title">
+	 <string>&amp;View</string>
+	</property>
+	<addaction name="actionFullscreenMode"/>
+	<addaction name="separator"/>
+	<addaction name="actionSignals"/>
+	<addaction name="actionPlotSettings"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
-    <property name="title">
-     <string>&amp;Help</string>
-    </property>
-    <addaction name="actionShowManual"/>
-    <addaction name="separator"/>
-    <addaction name="actionAboutQt"/>
-    <addaction name="actionAbout"/>
+	<property name="title">
+	 <string>&amp;Help</string>
+	</property>
+	<addaction name="actionShowManual"/>
+	<addaction name="separator"/>
+	<addaction name="actionAboutQt"/>
+	<addaction name="actionAbout"/>
    </widget>
    <widget class="QMenu" name="menuWindow">
-    <property name="sizePolicy">
-     <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-      <horstretch>0</horstretch>
-      <verstretch>0</verstretch>
-     </sizepolicy>
-    </property>
-    <property name="title">
-     <string>&amp;Window</string>
-    </property>
-    <property name="separatorsCollapsible">
-     <bool>true</bool>
-    </property>
-    <addaction name="actionClose"/>
-    <addaction name="actionCloseAll"/>
-    <addaction name="separator"/>
-    <addaction name="actionTile"/>
-    <addaction name="actionCascade"/>
-    <addaction name="separator"/>
-    <addaction name="actionNext"/>
-    <addaction name="actionPrevious"/>
-    <addaction name="separator"/>
+	<property name="sizePolicy">
+	 <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+	  <horstretch>0</horstretch>
+	  <verstretch>0</verstretch>
+	 </sizepolicy>
+	</property>
+	<property name="title">
+	 <string>&amp;Window</string>
+	</property>
+	<property name="separatorsCollapsible">
+	 <bool>true</bool>
+	</property>
+	<addaction name="actionClose"/>
+	<addaction name="actionCloseAll"/>
+	<addaction name="separator"/>
+	<addaction name="actionTile"/>
+	<addaction name="actionCascade"/>
+	<addaction name="separator"/>
+	<addaction name="actionNext"/>
+	<addaction name="actionPrevious"/>
+	<addaction name="separator"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuPlot"/>
@@ -124,232 +124,231 @@
   <widget class="QStatusBar" name="statusbar"/>
   <widget class="QDockWidget" name="dockPlotSettings">
    <property name="windowTitle">
-    <string>Plot settings</string>
+	<string>Plot settings</string>
    </property>
    <attribute name="dockWidgetArea">
-    <number>2</number>
+	<number>2</number>
    </attribute>
    <widget class="QWidget" name="dockWidgetContents"/>
   </widget>
   <widget class="QDockWidget" name="dockSignals">
    <property name="windowTitle">
-    <string>Signals</string>
+	<string>Signals</string>
    </property>
    <attribute name="dockWidgetArea">
-    <number>8</number>
+	<number>8</number>
    </attribute>
    <widget class="QWidget" name="dockWidgetContents_2">
-    <layout class="QGridLayout" name="gridLayout_2">
-     <property name="leftMargin">
-      <number>0</number>
-     </property>
-     <property name="topMargin">
-      <number>0</number>
-     </property>
-     <property name="rightMargin">
-      <number>0</number>
-     </property>
-     <property name="bottomMargin">
-      <number>0</number>
-     </property>
-     <property name="spacing">
-      <number>0</number>
-     </property>
-     <item row="0" column="0">
-      <widget class="QTableView" name="tableSignals">
-       <property name="alternatingRowColors">
-        <bool>true</bool>
-       </property>
-       <attribute name="verticalHeaderVisible">
-        <bool>false</bool>
-       </attribute>
-      </widget>
-     </item>
-    </layout>
+	<layout class="QGridLayout" name="gridLayout_2">
+	 <property name="leftMargin">
+	  <number>0</number>
+	 </property>
+	 <property name="topMargin">
+	  <number>0</number>
+	 </property>
+	 <property name="rightMargin">
+	  <number>0</number>
+	 </property>
+	 <property name="bottomMargin">
+	  <number>0</number>
+	 </property>
+	 <property name="spacing">
+	  <number>0</number>
+	 </property>
+	 <item row="0" column="0">
+	  <widget class="QTableView" name="tableSignals">
+	   <property name="alternatingRowColors">
+		<bool>true</bool>
+	   </property>
+	   <attribute name="verticalHeaderVisible">
+		<bool>false</bool>
+	   </attribute>
+	  </widget>
+	 </item>
+	</layout>
    </widget>
   </widget>
   <action name="actionOpen">
    <property name="icon">
-    <iconset resource="icons.qrc">
-     <normaloff>:/icons/document-open-symbolic.svg</normaloff>:/icons/document-open-symbolic.svg</iconset>
+	<iconset resource="icons.qrc">
+	 <normaloff>:/icons/document-open-symbolic.svg</normaloff>:/icons/document-open-symbolic.svg</iconset>
    </property>
    <property name="text">
-    <string>&amp;Open...</string>
+	<string>&amp;Open...</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+O</string>
+	<string>Ctrl+O</string>
    </property>
   </action>
   <action name="actionSave">
    <property name="icon">
-    <iconset resource="icons.qrc">
-     <normaloff>:/icons/document-save-symbolic.svg</normaloff>:/icons/document-save-symbolic.svg</iconset>
+	<iconset resource="icons.qrc">
+	 <normaloff>:/icons/document-save-symbolic.svg</normaloff>:/icons/document-save-symbolic.svg</iconset>
    </property>
    <property name="text">
-    <string>&amp;Save</string>
+	<string>&amp;Save</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+S</string>
+	<string>Ctrl+S</string>
    </property>
   </action>
   <action name="actionSaveAs">
    <property name="icon">
-    <iconset resource="icons.qrc">
-     <normaloff>:/icons/document-save-as-symbolic.svg</normaloff>:/icons/document-save-as-symbolic.svg</iconset>
+	<iconset resource="icons.qrc">
+	 <normaloff>:/icons/document-save-as-symbolic.svg</normaloff>:/icons/document-save-as-symbolic.svg</iconset>
    </property>
    <property name="text">
-    <string>Save &amp;as...</string>
+	<string>Save &amp;as...</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+Shift+S</string>
+	<string>Ctrl+Shift+S</string>
    </property>
   </action>
   <action name="actionImport">
    <property name="text">
-    <string>Import &amp;Recon File...</string>
+	<string>Import &amp;Recon File...</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+I</string>
+	<string>Ctrl+I</string>
    </property>
   </action>
   <action name="actionQuit">
    <property name="icon">
-    <iconset resource="icons.qrc">
-     <normaloff>:/icons/window-close-symbolic.svg</normaloff>:/icons/window-close-symbolic.svg</iconset>
+	<iconset resource="icons.qrc">
+	 <normaloff>:/icons/window-close-symbolic.svg</normaloff>:/icons/window-close-symbolic.svg</iconset>
    </property>
    <property name="text">
-    <string>&amp;Quit</string>
+	<string>&amp;Quit</string>
    </property>
    <property name="shortcut">
-    <string>F12</string>
+	<string>F12</string>
    </property>
    <property name="menuRole">
-    <enum>QAction::QuitRole</enum>
+	<enum>QAction::QuitRole</enum>
    </property>
   </action>
   <action name="actionFullscreenMode">
    <property name="icon">
-    <iconset resource="icons.qrc">
-     <normaloff>:/icons/view-fullscreen-symbolic.svg</normaloff>:/icons/view-fullscreen-symbolic.svg</iconset>
+	<iconset resource="icons.qrc">
+	 <normaloff>:/icons/view-fullscreen-symbolic.svg</normaloff>:/icons/view-fullscreen-symbolic.svg</iconset>
    </property>
    <property name="text">
-    <string>&amp;Fullscreen mode</string>
+	<string>&amp;Fullscreen mode</string>
    </property>
    <property name="shortcut">
-    <string>F11</string>
+	<string>F11</string>
    </property>
   </action>
   <action name="actionSignals">
    <property name="checkable">
-    <bool>true</bool>
+	<bool>true</bool>
    </property>
    <property name="checked">
-    <bool>true</bool>
+	<bool>true</bool>
    </property>
    <property name="text">
-    <string>&amp;Signals</string>
+	<string>&amp;Signals</string>
    </property>
    <property name="shortcut">
-    <string>F2</string>
+	<string>F2</string>
    </property>
   </action>
   <action name="actionPlotSettings">
    <property name="checkable">
-    <bool>true</bool>
+	<bool>true</bool>
    </property>
    <property name="checked">
-    <bool>true</bool>
+	<bool>true</bool>
    </property>
    <property name="text">
-    <string>&amp;Plot settings</string>
+	<string>&amp;Plot settings</string>
    </property>
    <property name="shortcut">
-    <string>F3</string>
+	<string>F3</string>
    </property>
   </action>
   <action name="actionShowManual">
    <property name="icon">
-    <iconset resource="icons.qrc">
-     <normaloff>:/icons/help-contents-symbolic.svg</normaloff>:/icons/help-contents-symbolic.svg</iconset>
+	<iconset resource="icons.qrc">
+	 <normaloff>:/icons/help-contents-symbolic.svg</normaloff>:/icons/help-contents-symbolic.svg</iconset>
    </property>
    <property name="text">
-    <string>Show &amp;manual</string>
+	<string>Show &amp;manual</string>
    </property>
    <property name="shortcut">
-    <string>F1</string>
+	<string>F1</string>
    </property>
   </action>
   <action name="actionAbout">
    <property name="icon">
-    <iconset resource="icons.qrc">
-     <normaloff>:/icons/help-about-symbolic.svg</normaloff>:/icons/help-about-symbolic.svg</iconset>
+	<iconset resource="icons.qrc">
+	 <normaloff>:/icons/help-about-symbolic.svg</normaloff>:/icons/help-about-symbolic.svg</iconset>
    </property>
    <property name="text">
-    <string>&amp;About...</string>
+	<string>&amp;About...</string>
    </property>
    <property name="menuRole">
-    <enum>QAction::AboutRole</enum>
+	<enum>QAction::AboutRole</enum>
    </property>
   </action>
   <action name="actionClose">
    <property name="text">
-    <string>Cl&amp;ose</string>
+	<string>Cl&amp;ose</string>
    </property>
    <property name="shortcut">
-    <string>Esc</string>
+	<string>Esc</string>
    </property>
   </action>
   <action name="actionCloseAll">
    <property name="text">
-    <string>Close &amp;all</string>
+	<string>Close &amp;all</string>
    </property>
   </action>
   <action name="actionTile">
    <property name="text">
-    <string>&amp;Tile</string>
+	<string>&amp;Tile</string>
    </property>
   </action>
   <action name="actionCascade">
    <property name="text">
-    <string>&amp;Cascade</string>
+	<string>&amp;Cascade</string>
    </property>
   </action>
   <action name="actionNext">
    <property name="text">
-    <string>Ne&amp;xt</string>
+	<string>Ne&amp;xt</string>
    </property>
    <property name="shortcut">
-    <string>PgUp</string>
+	<string>PgUp</string>
    </property>
   </action>
   <action name="actionPrevious">
    <property name="text">
-    <string>Pre&amp;vious</string>
+	<string>Pre&amp;vious</string>
    </property>
    <property name="shortcut">
-    <string>PgDown</string>
+	<string>PgDown</string>
    </property>
   </action>
   <action name="actionAboutQt">
    <property name="text">
-    <string>About &amp;Qt...</string>
+	<string>About &amp;Qt...</string>
    </property>
    <property name="menuRole">
-    <enum>QAction::AboutQtRole</enum>
+	<enum>QAction::AboutQtRole</enum>
    </property>
   </action>
   <action name="actionRefresh">
    <property name="icon">
-    <iconset resource="icons.qrc">
-     <normaloff>:/icons/view-refresh-symbolic.svg</normaloff>:/icons/view-refresh-symbolic.svg</iconset>
+	<iconset resource="icons.qrc">
+	 <normaloff>:/icons/view-refresh-symbolic.svg</normaloff>:/icons/view-refresh-symbolic.svg</iconset>
    </property>
    <property name="text">
-    <string>Refresh</string>
+	<string>Refresh</string>
    </property>
    <property name="shortcut">
-    <string>F5</string>
+	<string>F5</string>
    </property>
-  </action>
   </action>
  </widget>
  <resources>
@@ -362,14 +361,14 @@
    <receiver>dockSignals</receiver>
    <slot>setVisible(bool)</slot>
    <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>399</x>
-     <y>472</y>
-    </hint>
+	<hint type="sourcelabel">
+	 <x>-1</x>
+	 <y>-1</y>
+	</hint>
+	<hint type="destinationlabel">
+	 <x>399</x>
+	 <y>472</y>
+	</hint>
    </hints>
   </connection>
   <connection>
@@ -378,14 +377,14 @@
    <receiver>dockPlotSettings</receiver>
    <slot>setVisible(bool)</slot>
    <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>73</x>
-     <y>192</y>
-    </hint>
+	<hint type="sourcelabel">
+	 <x>-1</x>
+	 <y>-1</y>
+	</hint>
+	<hint type="destinationlabel">
+	 <x>73</x>
+	 <y>192</y>
+	</hint>
    </hints>
   </connection>
   <connection>
@@ -394,14 +393,14 @@
    <receiver>actionPlotSettings</receiver>
    <slot>setChecked(bool)</slot>
    <hints>
-    <hint type="sourcelabel">
-     <x>73</x>
-     <y>192</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
+	<hint type="sourcelabel">
+	 <x>73</x>
+	 <y>192</y>
+	</hint>
+	<hint type="destinationlabel">
+	 <x>-1</x>
+	 <y>-1</y>
+	</hint>
    </hints>
   </connection>
   <connection>
@@ -410,14 +409,14 @@
    <receiver>actionSignals</receiver>
    <slot>setChecked(bool)</slot>
    <hints>
-    <hint type="sourcelabel">
-     <x>399</x>
-     <y>472</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
+	<hint type="sourcelabel">
+	 <x>399</x>
+	 <y>472</y>
+	</hint>
+	<hint type="destinationlabel">
+	 <x>-1</x>
+	 <y>-1</y>
+	</hint>
    </hints>
   </connection>
   <connection>
@@ -426,14 +425,14 @@
    <receiver>MainWindow</receiver>
    <slot>close()</slot>
    <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>399</x>
-     <y>299</y>
-    </hint>
+	<hint type="sourcelabel">
+	 <x>-1</x>
+	 <y>-1</y>
+	</hint>
+	<hint type="destinationlabel">
+	 <x>399</x>
+	 <y>299</y>
+	</hint>
    </hints>
   </connection>
   <connection>
@@ -442,14 +441,14 @@
    <receiver>mdiArea</receiver>
    <slot>closeActiveSubWindow()</slot>
    <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>370</x>
-     <y>192</y>
-    </hint>
+	<hint type="sourcelabel">
+	 <x>-1</x>
+	 <y>-1</y>
+	</hint>
+	<hint type="destinationlabel">
+	 <x>370</x>
+	 <y>192</y>
+	</hint>
    </hints>
   </connection>
   <connection>
@@ -458,14 +457,14 @@
    <receiver>mdiArea</receiver>
    <slot>closeAllSubWindows()</slot>
    <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>370</x>
-     <y>192</y>
-    </hint>
+	<hint type="sourcelabel">
+	 <x>-1</x>
+	 <y>-1</y>
+	</hint>
+	<hint type="destinationlabel">
+	 <x>370</x>
+	 <y>192</y>
+	</hint>
    </hints>
   </connection>
   <connection>
@@ -474,14 +473,14 @@
    <receiver>mdiArea</receiver>
    <slot>cascadeSubWindows()</slot>
    <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>370</x>
-     <y>192</y>
-    </hint>
+	<hint type="sourcelabel">
+	 <x>-1</x>
+	 <y>-1</y>
+	</hint>
+	<hint type="destinationlabel">
+	 <x>370</x>
+	 <y>192</y>
+	</hint>
    </hints>
   </connection>
   <connection>
@@ -490,14 +489,14 @@
    <receiver>mdiArea</receiver>
    <slot>tileSubWindows()</slot>
    <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>370</x>
-     <y>192</y>
-    </hint>
+	<hint type="sourcelabel">
+	 <x>-1</x>
+	 <y>-1</y>
+	</hint>
+	<hint type="destinationlabel">
+	 <x>370</x>
+	 <y>192</y>
+	</hint>
    </hints>
   </connection>
   <connection>
@@ -506,14 +505,14 @@
    <receiver>mdiArea</receiver>
    <slot>activateNextSubWindow()</slot>
    <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>370</x>
-     <y>192</y>
-    </hint>
+	<hint type="sourcelabel">
+	 <x>-1</x>
+	 <y>-1</y>
+	</hint>
+	<hint type="destinationlabel">
+	 <x>370</x>
+	 <y>192</y>
+	</hint>
    </hints>
   </connection>
   <connection>
@@ -522,14 +521,14 @@
    <receiver>mdiArea</receiver>
    <slot>activatePreviousSubWindow()</slot>
    <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>370</x>
-     <y>192</y>
-    </hint>
+	<hint type="sourcelabel">
+	 <x>-1</x>
+	 <y>-1</y>
+	</hint>
+	<hint type="destinationlabel">
+	 <x>370</x>
+	 <y>192</y>
+	</hint>
    </hints>
   </connection>
  </connections>

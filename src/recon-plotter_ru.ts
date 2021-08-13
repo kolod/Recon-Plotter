@@ -4,12 +4,27 @@
 <context>
     <name>ChartWindow</name>
     <message>
-        <location filename="chartwindow.cpp" line="67"/>
+        <location filename="chartwindow.cpp" line="35"/>
+        <source>Time, S</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="chartwindow.cpp" line="38"/>
+        <source>Voltage, V</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="chartwindow.cpp" line="43"/>
+        <source>Current, A</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="chartwindow.cpp" line="88"/>
         <source>Recon Plotter</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="chartwindow.cpp" line="68"/>
+        <location filename="chartwindow.cpp" line="89"/>
         <source>&apos;%1&apos; has been modified.
 Do you want to save your changes?</source>
         <translation type="unfinished"></translation>
@@ -218,11 +233,6 @@ Do you want to save your changes?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="355"/>
-        <source>hjh</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="mainwindow.cpp" line="151"/>
         <source>Save Plot Data File</source>
         <translation type="unfinished"></translation>
@@ -242,47 +252,42 @@ Do you want to save your changes?</source>
 <context>
     <name>SignalsModel</name>
     <message>
+        <location filename="signalsmodel.cpp" line="41"/>
+        <source>Signal</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="signalsmodel.cpp" line="42"/>
-        <source>Selected</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="signalsmodel.cpp" line="43"/>
-        <source>Signal Name</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="signalsmodel.cpp" line="44"/>
         <source>Units</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="signalsmodel.cpp" line="45"/>
+        <location filename="signalsmodel.cpp" line="43"/>
         <source>Inverted</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="signalsmodel.cpp" line="46"/>
+        <location filename="signalsmodel.cpp" line="44"/>
         <source>Smooth</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="signalsmodel.cpp" line="47"/>
+        <location filename="signalsmodel.cpp" line="45"/>
         <source>Scale</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="signalsmodel.cpp" line="48"/>
+        <location filename="signalsmodel.cpp" line="46"/>
         <source>Minimum</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="signalsmodel.cpp" line="49"/>
+        <location filename="signalsmodel.cpp" line="47"/>
         <source>Maximum</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="signalsmodel.cpp" line="50"/>
+        <location filename="signalsmodel.cpp" line="48"/>
         <source>Color</source>
         <translation type="unfinished"></translation>
     </message>
