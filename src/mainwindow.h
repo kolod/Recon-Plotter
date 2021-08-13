@@ -51,6 +51,7 @@ private slots:
 	void actionSave();
 	void actionSaveAs();
 	void actionImport();
+	void actionRefresh();
 
 private:
 	Ui::MainWindow *ui;

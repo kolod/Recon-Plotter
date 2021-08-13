@@ -19,6 +19,8 @@
 #include <QMdiSubWindow>
 #include <QPointer>
 #include <QChartView>
+#include <QChart>
+#include <QValueAxis>
 #include "datafile.h"
 
 class ChartWindow : public QMdiSubWindow
@@ -31,6 +33,7 @@ public:
 	DataFile *dataFile() const {return mDataFile;}
 	QString userFriendlyCurrentFile();
 	void setDataFile(DataFile *datafile = nullptr);
+	void refresh();
 
 public slots:
 	bool loadFile(QString filename);
@@ -40,6 +43,10 @@ protected:
 
 private:
 	bool maybeSave();
+	QChart *mChart;
 	QChartView *mChartView;
 	DataFile *mDataFile;
+	QValueAxis *mTimeAxis;
+	QValueAxis *mVoltageAxis;
+	QValueAxis *mCurrentAxis;
 };

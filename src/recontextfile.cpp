@@ -34,6 +34,9 @@ bool ReconTextFile::read()
 
 	// Open file
 	QFile datafile(mFileName);
+
+	//TODO: Fix conversion from cp1251
+
 	if (datafile.open(QIODevice::ReadOnly)) {
 
 		// Send progress information
@@ -43,7 +46,7 @@ bool ReconTextFile::read()
 		qApp->processEvents();
 
 		// Read header
-		QString line = QString::fromUtf8(datafile.readLine());
+		QString line = QString::fromLocal8Bit(datafile.readLine());
 		if (!line.isEmpty()) {
 			auto data = readCommaSeparatedLine(line);
 			if (data.count() >= 1) mTitle            = data[0];
@@ -62,13 +65,13 @@ bool ReconTextFile::read()
 
 		// Read channels
 		for (;;) {
-			line = QString::fromUtf8(datafile.readLine()).simplified();
+			line = QString::fromLocal8Bit(datafile.readLine()).simplified();
 			if (line.isEmpty()) break;
 
 			auto data = readCommaSeparatedLine(line);
 			if (data.count() >= 1) {
 				if (data[0] == '1') {
-					line = QString::fromUtf8(datafile.readLine().simplified());
+					line = QString::fromLocal8Bit(datafile.readLine().simplified());
 					continue;
 				} else if (data[0] == 'N') {
 					break;
@@ -100,7 +103,7 @@ bool ReconTextFile::read()
 
 		// Read data
 		for (;;) {
-			line = QString::fromUtf8(datafile.readLine()).simplified();
+			line = QString::fromLocal8Bit(datafile.readLine()).simplified();
 			QStringList values = line.split(',');
 			if (values.count() != (mAnalogSignals.count() + 3)) break;  //TODO: Fix for discrete signals
 

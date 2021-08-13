@@ -350,10 +350,6 @@
     <string>F5</string>
    </property>
   </action>
-  <action name="actionhjh">
-   <property name="text">
-    <string>hjh</string>
-   </property>
   </action>
  </widget>
  <resources>

@@ -14,6 +14,7 @@
 //    You should have received a copy of the GNU General Public License
 //    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+#include <QDebug>
 #include <QQueue>
 #include "analogsignal.h"
 
@@ -53,28 +54,37 @@ void AnalogSignal::calculateLimits()
 	}
 }
 
-QLineSeries *AnalogSignal::lineSeries() {
-	QLineSeries *lineSeries = new QLineSeries(this);
+QList<qreal> *AnalogSignal::smoothed()
+{
+	if (mSmooth > 1) {
 
-	if (mTime) {
-
-		if (mSmooth <= 1) {
-			for (qsizetype i = 0; i < qMin(mData.count(), mTime->count()); i++) {
-				lineSeries->append(mTime->at(i), mData.at(i) * mScale);
-			}
-		} else {
+		QList<qreal> *result = new QList<qreal>();
 			QQueue<qreal> buffer;
 			qreal value = 0.0;
 
 			for (qsizetype i = 0; i < qMin(mData.count(), mTime->count()); i++) {
 				value += mData.at(i);
 				buffer.enqueue(mData.at(i));
-				if (buffer.count() > static_cast<int>(mSmooth)) {
-					value -= buffer.dequeue();
+			if (buffer.count() > static_cast<int>(mSmooth)) value -= buffer.dequeue();
+			result->append(value / mSmooth);
 				}
 
-				lineSeries->append(mTime->at(i), value * mScale);
+		return result;
 			}
+
+	return &mData;
+}
+
+QLineSeries *AnalogSignal::lineSeries() {
+	QLineSeries *lineSeries = new QLineSeries();
+	lineSeries->setName(mName);
+	lineSeries->setColor(QColor(mColor));
+	lineSeries->setUseOpenGL(true);
+
+	if (mTime && (mData.count() == mTime->count())) {
+		QList<qreal> *data = smoothed();
+		for (qsizetype i = 0; i < data->count(); i++) {
+			lineSeries->append(mTime->at(i), data->at(i) * mScale);
 		}
 	}
 

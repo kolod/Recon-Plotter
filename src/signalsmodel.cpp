@@ -18,7 +18,6 @@
 #include "analogsignal.h"
 
 enum class SignalsModelColumn {
-	Selected,
 	Name,
 	Unit,
 	Inverted,
@@ -39,8 +38,7 @@ QVariant SignalsModel::headerData(int section, Qt::Orientation orientation, int 
 	if (role == Qt::DisplayRole) {
 		if (orientation == Qt::Horizontal) {
 			switch (static_cast<SignalsModelColumn>(section)) {
-				case SignalsModelColumn::Selected: return tr("Selected");
-				case SignalsModelColumn::Name:     return tr("Signal Name");
+				case SignalsModelColumn::Name:     return tr("Signal");
 				case SignalsModelColumn::Unit:     return tr("Units");
 				case SignalsModelColumn::Inverted: return tr("Inverted");
 				case SignalsModelColumn::Smooth:   return tr("Smooth");
@@ -48,6 +46,13 @@ QVariant SignalsModel::headerData(int section, Qt::Orientation orientation, int 
 				case SignalsModelColumn::Minimum:  return tr("Minimum");
 				case SignalsModelColumn::Maximum:  return tr("Maximum");
 				case SignalsModelColumn::Color:    return tr("Color");
+			}
+		}
+	} else if (role == Qt::TextAlignmentRole) {
+		if (orientation == Qt::Horizontal) {
+			switch (static_cast<SignalsModelColumn>(section)) {
+				case SignalsModelColumn::Name:     return Qt::AlignLeft + Qt::AlignVCenter;
+				default:                           return Qt::AlignCenter;
 			}
 		}
 	}
@@ -58,7 +63,6 @@ QVariant SignalsModel::headerData(int section, Qt::Orientation orientation, int 
 QHeaderView::ResizeMode SignalsModel::columnResizeMode(const int section) const
 {
 	switch (static_cast<SignalsModelColumn>(section)) {
-		case SignalsModelColumn::Selected: return QHeaderView::ResizeToContents;
 		case SignalsModelColumn::Name:     return QHeaderView::Stretch;
 		case SignalsModelColumn::Unit:     return QHeaderView::ResizeToContents;
 		case SignalsModelColumn::Inverted: return QHeaderView::ResizeToContents;
@@ -81,7 +85,7 @@ int SignalsModel::rowCount(const QModelIndex &parent) const
 
 int SignalsModel::columnCount(const QModelIndex &parent) const
 {
-	return parent.isValid() ? 0 : 9;
+	return parent.isValid() ? 0 : 8;
 }
 
 QVariant SignalsModel::data(const QModelIndex &index, int role) const
@@ -94,15 +98,25 @@ QVariant SignalsModel::data(const QModelIndex &index, int role) const
 
 	if ((role == Qt::DisplayRole) || (role == Qt::EditRole)) {
 		switch (static_cast<SignalsModelColumn>(index.column())) {
-			case SignalsModelColumn::Selected: return signal->selected();
 			case SignalsModelColumn::Name:     return signal->name();
 			case SignalsModelColumn::Unit:     return signal->unit();
-			case SignalsModelColumn::Inverted: return signal->inverted();
 			case SignalsModelColumn::Scale:    return signal->scale();
 			case SignalsModelColumn::Smooth:   return signal->smooth();
 			case SignalsModelColumn::Minimum:  return signal->bottom();
 			case SignalsModelColumn::Maximum:  return signal->top();
 			case SignalsModelColumn::Color:    return signal->color();
+			case SignalsModelColumn::Inverted: ;
+		}
+	} else if (role == Qt::CheckStateRole) {
+		switch (static_cast<SignalsModelColumn>(index.column())) {
+			case SignalsModelColumn::Name: return signal->selected() ? Qt::Checked : Qt::Unchecked;
+			case SignalsModelColumn::Inverted: return signal->inverted() ? Qt::Checked : Qt::Unchecked;
+			default: break;
+		}
+	} else if (role == Qt::TextAlignmentRole) {
+		switch (static_cast<SignalsModelColumn>(index.column())) {
+			case SignalsModelColumn::Name:     return Qt::AlignLeft + Qt::AlignVCenter;
+			default:                           return Qt::AlignCenter;
 		}
 	}
 
@@ -115,15 +129,20 @@ bool SignalsModel::setData(const QModelIndex &index, const QVariant &value, int 
 		auto signal = mDataFile->analogSignal(index.row());
 		if ((role == Qt::DisplayRole) || (role == Qt::EditRole)) {
 			switch (static_cast<SignalsModelColumn>(index.column())) {
-				case SignalsModelColumn::Selected: signal->setSelected(value.toBool());         break;
 				case SignalsModelColumn::Name:     signal->setName(value.toString());           break;
 				case SignalsModelColumn::Unit:     signal->setUnit(value.toString());           break;
-				case SignalsModelColumn::Inverted: signal->setInverted(value.toBool());         break;
+				case SignalsModelColumn::Inverted:                                              break;
 				case SignalsModelColumn::Scale:    signal->setScale(value.toDouble());          break;
 				case SignalsModelColumn::Smooth:   signal->setSmooth(value.toDouble());         break;
 				case SignalsModelColumn::Color:    signal->setColor(QColor(value.toString()));  break;
 				case SignalsModelColumn::Minimum:                                               break;
 				case SignalsModelColumn::Maximum:                                               break;
+			}
+		} else if (role == Qt::CheckStateRole) {
+			switch (static_cast<SignalsModelColumn>(index.column())) {
+				case SignalsModelColumn::Name: signal->setSelected(value.toBool());         break;
+				case SignalsModelColumn::Inverted: signal->setInverted(value.toBool());         break;
+				default:                                                                        break;
 			}
 		}
 
@@ -139,10 +158,10 @@ Qt::ItemFlags SignalsModel::flags(const QModelIndex &index) const
 	if (!index.isValid()) return Qt::NoItemFlags;
 
 	switch (static_cast<SignalsModelColumn>(index.column())) {
-		case SignalsModelColumn::Selected:
-		case SignalsModelColumn::Name:
-		case SignalsModelColumn::Unit:
 		case SignalsModelColumn::Inverted:
+		case SignalsModelColumn::Name:
+			return Qt::ItemIsUserCheckable | Qt::ItemIsEditable | Qt::ItemIsEnabled;
+		case SignalsModelColumn::Unit:
 		case SignalsModelColumn::Scale:
 		case SignalsModelColumn::Smooth:
 		case SignalsModelColumn::Color:

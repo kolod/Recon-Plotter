@@ -89,6 +89,7 @@ public slots:
 
 	void clear();
 	void calculateLimits();
+	QList<qreal> *smoothed();
 
 private:
 	QString mName;

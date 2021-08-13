@@ -22,7 +22,7 @@
 #include <QStandardPaths>
 #include <QMdiSubWindow>
 #include <QAction>
-
+#include "doublelineedit.h"
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
 
@@ -184,6 +184,15 @@ void MainWindow::actionImport()
 	});
 
 	dialog->open();
+}
+
+void MainWindow::actionRefresh()
+{
+	activeMdiChild()->refresh();
+}
+
+ChartWindow *MainWindow::activeMdiChild() const {
+	return qobject_cast<ChartWindow *>(ui->mdiArea->activeSubWindow());
 }
 
 void MainWindow::updateWindowMenu() {

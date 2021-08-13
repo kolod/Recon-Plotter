@@ -40,6 +40,8 @@ public:
 	qreal minY() {return mMinY;}
 	qreal maxY() {return mMaxY;}
 	QString fileName() const {return mFileName;}
+	QString title() const {return mTitle;}
+	QString device() const {return mDevice;}
 
 	bool save();
 	bool saveAs(QString filename = "");

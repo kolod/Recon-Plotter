@@ -18,14 +18,35 @@
 #include <QMessageBox>
 #include <QMdiSubWindow>
 #include "chartwindow.h"
+#include "analogsignal.h"
 
 ChartWindow::ChartWindow(QWidget *parent, Qt::WindowFlags flags)
 	: QMdiSubWindow(parent, flags)
+	, mChart(nullptr)
     , mDataFile(nullptr)
 {
 	setAttribute(Qt::WA_DeleteOnClose, true);
 	mChartView = new QChartView(this);
+	mChartView->setRenderHint(QPainter::Antialiasing);
 	setWidget(mChartView);
+
+	mTimeAxis = new QValueAxis;
+	mTimeAxis->setLabelFormat("%g");
+	mTimeAxis->setTitleText(tr("Time, S"));
+
+	mVoltageAxis = new QValueAxis;
+	mVoltageAxis->setTitleText(tr("Voltage, V"));
+	mVoltageAxis->setGridLineVisible();
+	mVoltageAxis->setMinorTickCount(4);
+
+	mCurrentAxis = new QValueAxis;
+	mCurrentAxis->setTitleText(tr("Current, A"));
+	mCurrentAxis->setGridLineVisible();
+	mCurrentAxis->setMinorTickCount(4);mChart = new QChart;
+
+	mChart->addAxis(mTimeAxis   , Qt::AlignBottom);
+	mChart->addAxis(mCurrentAxis, Qt::AlignLeft);
+	mChart->addAxis(mVoltageAxis, Qt::AlignRight);
 }
 
 void ChartWindow::closeEvent(QCloseEvent *event)
@@ -74,4 +95,26 @@ bool ChartWindow::maybeSave()
 		}
 	}
 	return true;
+}
+
+void ChartWindow::refresh()
+{
+	mChart->removeAllSeries();
+
+	for (qsizetype i = 0; i < mDataFile->analogSignalsCount(); i++) {
+		auto *signal = mDataFile->analogSignal(i);
+		if (signal->selected()) {
+			auto line = signal->lineSeries();
+			mChart->addSeries(line);
+			if (mVoltageAxis != nullptr) line->attachAxis(mVoltageAxis);
+			if (mTimeAxis != nullptr) line->attachAxis(mTimeAxis);
+		}
+	}
+
+	mChart->setTitle(mDataFile->title());
+	mChart->setAnimationOptions(QChart::SeriesAnimations);
+	mChart->legend()->hide();
+	mChart->createDefaultAxes();
+
+	mChartView->setChart(mChart);
 }
