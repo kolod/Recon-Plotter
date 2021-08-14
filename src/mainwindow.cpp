@@ -85,19 +85,35 @@ void MainWindow::restoreSession()
 
 	restoreGeometry(settings.value("geometry").toByteArray());
 	restoreState(settings.value("state").toByteArray());
+
+	auto files = settings.value("Opened Files").toStringList();
+	foreach (auto filename, files) {
+		openFile(filename);
+	}
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
+	QSettings settings;
+	QStringList files;
+
 	if (ui->mdiArea->currentSubWindow() != nullptr) {
-		ui->mdiArea->closeAllSubWindows();
+		foreach (auto *child, ui->mdiArea->subWindowList()) {
+			QPointer<ChartWindow> chart = qobject_cast<ChartWindow*>(child);
+			QPointer<DataFile> datafile = chart ? chart->dataFile() : nullptr;
+			if (datafile) files.append(datafile->fileName());
+			if (chart) chart->close();
+		}
 	}
+
 	if (ui->mdiArea->currentSubWindow() == nullptr) {
 		saveSession();
 		event->accept();
 	} else {
 		event->ignore();
 	}
+
+	settings.setValue("Opened Files", files);
 }
 
 void MainWindow::actionOpen()
