@@ -22,10 +22,11 @@
 #include "utils.h"
 #include "recontextfile.h"
 
-ReconTextFile::ReconTextFile(QString filename, QObject *parent) : DataFile(filename, parent)
+ReconTextFile::ReconTextFile(QObject *parent)
+	: DataFile(parent)
 {}
 
-bool ReconTextFile::read()
+bool ReconTextFile::importFile(QString filename)
 {
 	// Clear data
 	foreach (auto item, mAnalogSignals) if (item != nullptr) delete item;
@@ -33,7 +34,7 @@ bool ReconTextFile::read()
 	mTime.clear();
 
 	// Open file
-	QFile datafile(mFileName);
+	QFile datafile(filename);
 
 	//TODO: Fix conversion from cp1251
 
@@ -81,12 +82,15 @@ bool ReconTextFile::read()
 			auto analogSignal = new AnalogSignal();
 			mAnalogSignals.append(analogSignal);
 
+			analogSignal->setScale(1.0);
+			analogSignal->setFactor(1.0);
+
 			if (data.count() >= 3)
 				analogSignal->setName(data[2]);
 			if ((data.count() >= 4) && (!data[3].isEmpty()))
 				analogSignal->setSelected(str2bool(data[3]));
 			if (data.count() >= 5)
-				analogSignal->setScale(str2qreal(data[4]));
+				analogSignal->setFactor(str2qreal(data[4]));
 			if (data.count() >= 6)
 				analogSignal->setSmooth(str2int(data[5]));
 		}
@@ -127,16 +131,29 @@ bool ReconTextFile::read()
 			}
 		}
 
+		// Close file
+		datafile.close();
+
+		// Calculate plot limits
+		mMinX = mTime.first();
+		mMaxX = mTime.last();
+		mMinY = -qInf();
+		mMaxY = qInf();
 		for (qsizetype i = 0; i < mAnalogSignals.count(); i++) {
 			mAnalogSignals[i]->setTime(&mTime);
 			mAnalogSignals[i]->calculateLimits();
-			if (mAnalogSignals[i]->left()   < mLeft)   mLeft   = mAnalogSignals[i]->left();
-			if (mAnalogSignals[i]->right()  > mRight)  mRight  = mAnalogSignals[i]->right();
-			if (mAnalogSignals[i]->bottom() < mBottom) mBottom = mAnalogSignals[i]->bottom();
-			if (mAnalogSignals[i]->top()    < mTop)    mTop    = mAnalogSignals[i]->top();
+			if (mAnalogSignals[i]->minY() < mMinY) mMinY = mAnalogSignals[i]->minY();
+			if (mAnalogSignals[i]->maxY() < mMaxY) mMaxY = mAnalogSignals[i]->maxY();
 		}
 
-		datafile.close();
+		mFileName     = filename;
+		mLeft         = mMinX;
+		mRight        = mMaxX;
+		mBottom       = mMinY;
+		mTop          = mMaxY;
+		mModified     = false;
+		mRenameNeeded = true;
+
 		emit updateProgressShow(false);
 		emit modifiedChanged(false);
 		emit dataLoaded();

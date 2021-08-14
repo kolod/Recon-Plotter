@@ -16,6 +16,7 @@
 
 #include <QDebug>
 #include <QtGlobal>
+#include <QPointer>
 #include <QSettings>
 #include <QFileDialog>
 #include <QElapsedTimer>
@@ -25,6 +26,7 @@
 #include "doublelineedit.h"
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
+#include "utils.h"
 
 MainWindow::MainWindow(QWidget *parent)
 	: QMainWindow(parent)
@@ -59,6 +61,7 @@ MainWindow::MainWindow(QWidget *parent)
 	connect(ui->actionSave, &QAction::triggered, this, &MainWindow::actionSave);
 	connect(ui->actionSaveAs, &QAction::triggered, this, &MainWindow::actionSaveAs);
 	connect(ui->actionImport, &QAction::triggered, this, &MainWindow::actionImport);
+	connect(ui->actionRefresh, &QAction::triggered, this, &MainWindow::actionRefresh);
 	connect(ui->actionAboutQt, &QAction::triggered, this, [](){qApp->aboutQt();});
 }
 
@@ -107,18 +110,18 @@ void MainWindow::actionOpen()
 	dialog->setAcceptMode(QFileDialog::AcceptOpen);
 	dialog->setWindowTitle(tr("Import Recon Data File"));
 	dialog->setDirectory(settings.value(
-	    "LastDir", QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
+		"LastDir", QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
 	).toString());
 
 	connect(dialog, &QFileDialog::accepted, this, [this, dialog]() {
 		bool ok = false;
 		foreach (auto filename, dialog->selectedFiles()) {
-			ok |= openFile(filename);
+			if (openFile(filename)) {
+				addToRecent(filename);
+				ok = true;
+			}
 		}
-		if (ok) {
-			QSettings settings;
-			settings.setValue("LastDir", dialog->directory().path());
-		}
+		if (ok) QSettings().setValue("LastDir", dialog->directory().path());
 	});
 
 	dialog->open();
@@ -132,7 +135,13 @@ void MainWindow::actionSave()
 	auto *datafile = child->dataFile();
 	if (datafile == nullptr) return;
 
-	datafile->save();
+	if (datafile->isRenameNeeded()) {
+		actionSaveAs();
+	} else {
+		if (datafile->save()) {
+			addToRecent(datafile->fileName());
+		}
+	}
 }
 
 void MainWindow::actionSaveAs()
@@ -146,13 +155,15 @@ void MainWindow::actionSaveAs()
 	QFileDialog *dialog = new QFileDialog(this);
 
 	dialog->setNameFilter("Plot Data File (*.plot)");
-	dialog->setFileMode(QFileDialog::ExistingFiles);
 	dialog->setAcceptMode(QFileDialog::AcceptSave);
 	dialog->setWindowTitle(tr("Save Plot Data File"));
-	dialog->selectFile(datafile->fileName());
+	dialog->selectFile(fixFileSuffix(datafile->fileName(), "plot"));
 
 	connect(dialog, &QFileDialog::accepted, this, [this, datafile, dialog]() {
-		datafile->saveAs(dialog->selectedFiles().first());
+		auto files = dialog->selectedFiles();
+		if (!files.isEmpty())
+			if (datafile->saveAs(files.first()))
+				addToRecent(files.first());
 	});
 
 	dialog->open();
@@ -169,7 +180,7 @@ void MainWindow::actionImport()
 	dialog->setLabelText(QFileDialog::Accept, tr("Import"));
 	dialog->setWindowTitle(tr("Import Recon Data File"));
 	dialog->setDirectory(settings.value(
-	    "LastImportDir", QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
+		"LastImportDir", QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
 	).toString());
 
 	connect(dialog, &QFileDialog::accepted, this, [this, dialog]() {
@@ -189,10 +200,6 @@ void MainWindow::actionImport()
 void MainWindow::actionRefresh()
 {
 	activeMdiChild()->refresh();
-}
-
-ChartWindow *MainWindow::activeMdiChild() const {
-	return qobject_cast<ChartWindow *>(ui->mdiArea->activeSubWindow());
 }
 
 void MainWindow::updateWindowMenu() {
@@ -218,6 +225,18 @@ void MainWindow::updateWindowMenu() {
 		action->setCheckable(true);
 		action->setChecked(mdiSubWindow == activeMdiChild());
 	}
+
+	// Disable actions
+	bool hasChildrens = !ui->mdiArea->subWindowList().isEmpty();
+	bool hasMultypleChildrens = ui->mdiArea->subWindowList().count() > 1;
+	bool hasActiveChildren = activeMdiChild() != nullptr;
+
+	ui->actionTile->setEnabled(hasChildrens);
+	ui->actionCascade->setEnabled(hasChildrens);
+	ui->actionCloseAll->setEnabled(hasChildrens);
+	ui->actionClose->setEnabled(hasActiveChildren);
+	ui->actionNext->setEnabled(hasMultypleChildrens);
+	ui->actionPrevious->setEnabled(hasMultypleChildrens);
 }
 
 void MainWindow::updateFileMenu()
@@ -236,6 +255,7 @@ void MainWindow::updateFileMenu()
 	foreach (auto filename, recent) {
 		auto *action = new QAction(filename);
 		action->setEnabled(QFileInfo(filename).isReadable());
+		connect(action, &QAction::triggered, this, [this, filename](){openFile(filename);});
 		ui->menuOpenRecent->addAction(action);
 	}
 
@@ -243,10 +263,10 @@ void MainWindow::updateFileMenu()
 	ui->menuOpenRecent->setEnabled(ui->menuOpenRecent->actions().count() > 0);
 
 	// Disable save menu if no active file
-	auto child = activeMdiChild();
-	bool canSave = ((child != nullptr) && (child->dataFile() != nullptr));
-	ui->actionSave->setEnabled(canSave);
-	ui->actionSaveAs->setEnabled(canSave);
+	QPointer<ChartWindow> child = activeMdiChild();
+	QPointer<DataFile> datafile = child ? child->dataFile() : nullptr;
+	ui->actionSave->setEnabled(datafile && datafile->isModified());
+	ui->actionSaveAs->setEnabled(datafile);
 }
 
 void MainWindow::updatePlotMenu()
@@ -258,16 +278,17 @@ void MainWindow::updatePlotMenu()
 }
 
 bool MainWindow::openFile(const QString filename) {
-	DataFile *datafile = new DataFile(filename, this);
+	DataFile *datafile = new DataFile(this);
 	connect(datafile, &DataFile::updateProgressShow , mProgress, &QProgressBar::setVisible);
 	connect(datafile, &DataFile::updateProgressRange, mProgress, &QProgressBar::setRange);
 	connect(datafile, &DataFile::updateProgressValue, mProgress, &QProgressBar::setValue);
 
-	if (datafile->read()) {
+	if (datafile->open(filename)) {
 		ChartWindow *newChartWindow = new ChartWindow(this);
 		newChartWindow->setDataFile(datafile);
 		ui->mdiArea->addSubWindow(newChartWindow);
 		newChartWindow->showMaximized();
+		newChartWindow->refresh();
 		updateWindowMenu();
 		return true;
 	}
@@ -277,16 +298,17 @@ bool MainWindow::openFile(const QString filename) {
 
 bool MainWindow::importReconTextFile(QString filename) {
 
-	DataFile *datafile = new ReconTextFile(filename, this);
+	auto *datafile = new ReconTextFile(this);
 	connect(datafile, &DataFile::updateProgressShow , mProgress, &QProgressBar::setVisible);
 	connect(datafile, &DataFile::updateProgressRange, mProgress, &QProgressBar::setRange);
 	connect(datafile, &DataFile::updateProgressValue, mProgress, &QProgressBar::setValue);
 
-	if (datafile->read()) {
+	if (datafile->importFile(filename)) {
 		ChartWindow *newChartWindow = new ChartWindow(this);
 		newChartWindow->setDataFile(datafile);
 		ui->mdiArea->addSubWindow(newChartWindow);
 		newChartWindow->showMaximized();
+		newChartWindow->refresh();
 		updateWindowMenu();
 		return true;
 	}
@@ -296,4 +318,13 @@ bool MainWindow::importReconTextFile(QString filename) {
 
 ChartWindow *MainWindow::activeMdiChild() const {
 	return qobject_cast<ChartWindow *>(ui->mdiArea->activeSubWindow());
+}
+
+void MainWindow::addToRecent(QString filename)
+{
+	QSettings settings;
+	auto recent = settings.value("Recent").toStringList();
+	recent.removeAll(filename);
+	recent.prepend(filename);
+	settings.setValue("Recent", recent);
 }

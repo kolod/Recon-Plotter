@@ -56,7 +56,9 @@ private slots:
 private:
 	Ui::MainWindow *ui;
 	QProgressBar *mProgress;
-	ChartWindow *activeMdiChild() const;
 	SignalsModel *mSignalsModel;
+
+	ChartWindow *activeMdiChild() const;
+	void addToRecent(QString filename);
 };
 

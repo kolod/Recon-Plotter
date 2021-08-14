@@ -20,9 +20,9 @@
 enum class SignalsModelColumn {
 	Name,
 	Unit,
-	Inverted,
-	Smooth,
+	Factor,
 	Scale,
+	Smooth,
 	Minimum,
 	Maximum,
 	Color
@@ -40,9 +40,9 @@ QVariant SignalsModel::headerData(int section, Qt::Orientation orientation, int 
 			switch (static_cast<SignalsModelColumn>(section)) {
 				case SignalsModelColumn::Name:     return tr("Signal");
 				case SignalsModelColumn::Unit:     return tr("Units");
-				case SignalsModelColumn::Inverted: return tr("Inverted");
-				case SignalsModelColumn::Smooth:   return tr("Smooth");
+				case SignalsModelColumn::Factor:   return tr("Factor");
 				case SignalsModelColumn::Scale:    return tr("Scale");
+				case SignalsModelColumn::Smooth:   return tr("Smooth");
 				case SignalsModelColumn::Minimum:  return tr("Minimum");
 				case SignalsModelColumn::Maximum:  return tr("Maximum");
 				case SignalsModelColumn::Color:    return tr("Color");
@@ -65,9 +65,9 @@ QHeaderView::ResizeMode SignalsModel::columnResizeMode(const int section) const
 	switch (static_cast<SignalsModelColumn>(section)) {
 		case SignalsModelColumn::Name:     return QHeaderView::Stretch;
 		case SignalsModelColumn::Unit:     return QHeaderView::ResizeToContents;
-		case SignalsModelColumn::Inverted: return QHeaderView::ResizeToContents;
-		case SignalsModelColumn::Smooth:   return QHeaderView::ResizeToContents;
+		case SignalsModelColumn::Factor:   return QHeaderView::ResizeToContents;
 		case SignalsModelColumn::Scale:    return QHeaderView::ResizeToContents;
+		case SignalsModelColumn::Smooth:   return QHeaderView::ResizeToContents;
 		case SignalsModelColumn::Minimum:  return QHeaderView::ResizeToContents;
 		case SignalsModelColumn::Maximum:  return QHeaderView::ResizeToContents;
 		case SignalsModelColumn::Color:    return QHeaderView::ResizeToContents;
@@ -100,17 +100,16 @@ QVariant SignalsModel::data(const QModelIndex &index, int role) const
 		switch (static_cast<SignalsModelColumn>(index.column())) {
 			case SignalsModelColumn::Name:     return signal->name();
 			case SignalsModelColumn::Unit:     return signal->unit();
+			case SignalsModelColumn::Factor:   return signal->factor();
 			case SignalsModelColumn::Scale:    return signal->scale();
 			case SignalsModelColumn::Smooth:   return signal->smooth();
-			case SignalsModelColumn::Minimum:  return signal->bottom();
-			case SignalsModelColumn::Maximum:  return signal->top();
+			case SignalsModelColumn::Minimum:  return signal->minY();
+			case SignalsModelColumn::Maximum:  return signal->maxY();
 			case SignalsModelColumn::Color:    return signal->color();
-			case SignalsModelColumn::Inverted: ;
 		}
 	} else if (role == Qt::CheckStateRole) {
 		switch (static_cast<SignalsModelColumn>(index.column())) {
 			case SignalsModelColumn::Name: return signal->selected() ? Qt::Checked : Qt::Unchecked;
-			case SignalsModelColumn::Inverted: return signal->inverted() ? Qt::Checked : Qt::Unchecked;
 			default: break;
 		}
 	} else if (role == Qt::TextAlignmentRole) {
@@ -131,7 +130,7 @@ bool SignalsModel::setData(const QModelIndex &index, const QVariant &value, int 
 			switch (static_cast<SignalsModelColumn>(index.column())) {
 				case SignalsModelColumn::Name:     signal->setName(value.toString());           break;
 				case SignalsModelColumn::Unit:     signal->setUnit(value.toString());           break;
-				case SignalsModelColumn::Inverted:                                              break;
+				case SignalsModelColumn::Factor:   signal->setFactor(value.toDouble());         break;
 				case SignalsModelColumn::Scale:    signal->setScale(value.toDouble());          break;
 				case SignalsModelColumn::Smooth:   signal->setSmooth(value.toDouble());         break;
 				case SignalsModelColumn::Color:    signal->setColor(QColor(value.toString()));  break;
@@ -140,8 +139,7 @@ bool SignalsModel::setData(const QModelIndex &index, const QVariant &value, int 
 			}
 		} else if (role == Qt::CheckStateRole) {
 			switch (static_cast<SignalsModelColumn>(index.column())) {
-				case SignalsModelColumn::Name: signal->setSelected(value.toBool());         break;
-				case SignalsModelColumn::Inverted: signal->setInverted(value.toBool());         break;
+				case SignalsModelColumn::Name: signal->setSelected(value.toBool());             break;
 				default:                                                                        break;
 			}
 		}
@@ -158,10 +156,10 @@ Qt::ItemFlags SignalsModel::flags(const QModelIndex &index) const
 	if (!index.isValid()) return Qt::NoItemFlags;
 
 	switch (static_cast<SignalsModelColumn>(index.column())) {
-		case SignalsModelColumn::Inverted:
 		case SignalsModelColumn::Name:
 			return Qt::ItemIsUserCheckable | Qt::ItemIsEditable | Qt::ItemIsEnabled;
 		case SignalsModelColumn::Unit:
+		case SignalsModelColumn::Factor:
 		case SignalsModelColumn::Scale:
 		case SignalsModelColumn::Smooth:
 		case SignalsModelColumn::Color:

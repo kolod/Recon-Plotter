@@ -18,6 +18,7 @@
 
 #include <QObject>
 #include <QString>
+#include <QDataStream>
 #include <QColor>
 #include <QtCharts/QLineSeries>
 
@@ -30,64 +31,41 @@ class AnalogSignal : public QObject
 	Q_OBJECT
 
 public:
-	AnalogSignal(QObject *parent = nullptr, QString name = "", QString unit = "", qreal scale = 1.0, int smooth = 1);
+	AnalogSignal(QObject *parent = nullptr);
 
-	QString name() const {return mName;}
-	QString unit() const {return mUnit;}
-	QColor color() const {return mColor;}
+	QString name(bool legend = false) const;
+
+	QString unit()  const {return mUnit;}
+	QColor color()  const {return mColor;}
 	bool selected() const {return mSelected;}
-	bool inverted() const {return mInverted;}
-	qreal scale() const {return mScale;}
+	double factor() const {return mFactor;}
+	double scale()  const {return mScale;}
+	double minY()   const {return mMinY;}
+	double maxY()   const {return mMaxY;}
+
 	QList<qreal> *data() {return &mData;}
 	size_t dataCount() const {return mData.count();}
 	unsigned int smooth() const {return mSmooth;}
-
-	qreal time(int index) {
-		return (mTime && (index < mTime->count()))? mTime->at(index) : qSNaN();
-	}
-
-	qreal left() const {return mLeft;}
-	qreal right() const {return mRight;}
-	qreal top() const {return mTop;}
-	qreal bottom() const {return mBottom;}
+	qreal time(int index) {return (mTime && (index < mTime->count()))? mTime->at(index) : qSNaN();}
 
 	QLineSeries *lineSeries();
 	QString toString();
 
+	bool saveToStream(QDataStream &stream) const;
+	bool loadFromStream(QDataStream &stream);
+
 public slots:
-	void setTime(QList<qreal> *time) {
-		mTime = time;
-	}
-
-	void setName(const QString name) {
-		mName = name;
-	}
-
-	void setUnit(const QString unit) {
-		mUnit = unit;
-	}
-
-	void setSmooth(const unsigned int smooth) {
-		if (smooth > 0) mSmooth = smooth;
-	}
-
-	void setScale(const qreal scale) {
-		mScale = scale;
-	}
-
-	void setSelected(const bool selected) {
-		mSelected = selected;
-	}
-
-	void setInverted(const bool inverted) {
-		mInverted = inverted;
-	}
-
-	void setColor(const QColor color) {
-		mColor = color;
-	}
+	void setTime(QList<qreal> *time)          { mTime = time;}
+	void setName(const QString name)          { mName = name;}
+	void setUnit(const QString unit)          { mUnit = unit;}
+	void setFactor(const qreal factor)        { mFactor = factor;}
+	void setScale(const qreal scale)          { mScale = scale;}
+	void setSelected(const bool selected)     { mSelected = selected;}
+	void setColor(const QColor color)         { mColor = color;}
+	void setSmooth(const unsigned int smooth) { if (smooth > 0) mSmooth = smooth;}
 
 	void clear();
+	void invert();
 	void calculateLimits();
 	QList<qreal> *smoothed();
 
@@ -95,14 +73,12 @@ private:
 	QString mName;
 	QString mUnit;
 	QColor mColor;
-	qreal mScale;
+	double mFactor;         // ADC factor
+	double mScale;          // Scale for plot
 	unsigned int mSmooth;
 	bool mSelected;
-	bool mInverted;
 	QList<qreal> mData;
 	QList<qreal> *mTime;
-	qreal mLeft;
-	qreal mRight;
-	qreal mBottom;
-	qreal mTop;
+	qreal mMinY;
+	qreal mMaxY;
 };

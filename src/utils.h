@@ -25,3 +25,5 @@ bool str2bool(const QString str, bool byDefault = false);
 qreal str2qreal(const QString str, qreal byDefault = 0.0);
 int str2int(const QString str, int byDefault = 0);
 unsigned int str2uint(const QString str, unsigned int byDefault = 0);
+
+QString fixFileSuffix(QString filename, const QString suffix);

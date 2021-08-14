@@ -31,26 +31,35 @@ class DataFile : public QObject
 	Q_OBJECT
 
 public:
-	explicit DataFile(QString filename, QObject *parent = nullptr);
-	virtual bool read() {return false;}
+	explicit DataFile(QObject *parent = nullptr);
 	int analogSignalsCount() {return mAnalogSignals.count();}
 	AnalogSignal *analogSignal(int channel) {return mAnalogSignals[channel];}
-	qreal minX() {return mMinX;}
-	qreal maxX() {return mMaxX;}
-	qreal minY() {return mMinY;}
-	qreal maxY() {return mMaxY;}
 	QString fileName() const {return mFileName;}
 	QString title() const {return mTitle;}
 	QString device() const {return mDevice;}
 
+	// Signal limits
+	double minX()   {return mMinX;}
+	double maxX()   {return mMaxX;}
+	double minY()   {return mMinY;}
+	double maxY()   {return mMaxY;}
+
+	// Plot window limits
+	double left()   {return mLeft;}
+	double right()  {return mRight;}
+	double bottom() {return mBottom;}
+	double top()    {return mTop;}
+
 	bool save();
-	bool saveAs(QString filename = "");
-	bool open();
+	bool saveAs(QString filename);
+	bool open(QString filename);
 	bool isModified() const {return mModified;}
 	void setModified() {
 		mModified = true;
 		emit modifiedChanged(true);
 	}
+
+	bool isRenameNeeded() const {return mRenameNeeded;}
 
 protected:
 	QString mFileName;
@@ -59,17 +68,18 @@ protected:
 	QString mOriginalFileName;
 	QString mLabelX;
 	QString mLabelY;
-	qreal mLeft;
-	qreal mRight;
-	qreal mBottom;
-	qreal mTop;
-	qreal mMinX;
-	qreal mMaxX;
-	qreal mMinY;
-	qreal mMaxY;
+	double mLeft;
+	double mRight;
+	double mBottom;
+	double mTop;
+	double mMinX;
+	double mMaxX;
+	double mMinY;
+	double mMaxY;
 	QList<AnalogSignal*> mAnalogSignals;
 	QList<qreal> mTime;
 	bool mModified;
+	bool mRenameNeeded;
 
 signals:
 	void updateProgressShow(bool state);

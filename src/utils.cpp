@@ -18,7 +18,8 @@
 
 #include <cmath>
 #include <array>
-
+#include <QDir>
+#include <QFileInfo>
 #include <QStringList>
 
 double prettyFloor(double value, int places) {
@@ -60,4 +61,14 @@ unsigned int str2uint(const QString str, unsigned int byDefault) {
 	unsigned int result = str.toUInt(&ok);
 	if (ok) return result;
 	return byDefault;
+}
+
+QString fixFileSuffix(QString filename, const QString suffix)
+{
+	QFileInfo fi(filename);
+	if (fi.suffix().toLower() != suffix) {
+		filename = fi.absoluteDir().dirName() + "/" + fi.completeBaseName() + "." + suffix;
+	}
+
+	return filename;
 }

@@ -18,15 +18,21 @@
 #include <QQueue>
 #include "analogsignal.h"
 
-AnalogSignal::AnalogSignal(QObject *parent, QString name, QString unit, qreal scale, int smooth)
+AnalogSignal::AnalogSignal(QObject *parent)
 	: QObject(parent)
-	, mName(name)
-	, mUnit(unit)
-	, mScale(scale)
-	, mSmooth(smooth)
+	, mName("")
+	, mUnit("")
+	, mFactor(1.0)
+	, mScale(1.0)
+	, mSmooth(1)
 	, mSelected(false)
 	, mTime(nullptr)
 {}
+
+QString AnalogSignal::name(bool legend) const
+{
+	return legend ? QString("%1, %2 × %3").arg(mName, mUnit).arg(mScale)  : mName;
+}
 
 void AnalogSignal::clear()
 {
@@ -35,22 +41,21 @@ void AnalogSignal::clear()
 	mScale = 1.0;
 	mSmooth = 1;
 	mSelected = false;
-	mInverted = false;
+}
+
+void AnalogSignal::invert()
+{
+	for (qsizetype i = 0; i < mData.count(); i++) mData[i] *= -1.0;
 }
 
 void AnalogSignal::calculateLimits()
 {
-	mTop = -qInf();
-	mBottom = qInf();
+	mMaxY = -qInf();
+	mMinY = qInf();
 
 	foreach (qreal val, mData) {
-		if (val > mTop) mTop = val;
-		if (val < mBottom) mBottom = val;
-	}
-
-	if (mTime && !mTime->isEmpty()) {
-		mLeft  = mTime->first();
-		mRight = mTime->last();
+		if (val > mMaxY) mMaxY = val;
+		if (val < mMinY) mMinY = val;
 	}
 }
 
@@ -95,4 +100,54 @@ QString AnalogSignal::toString()
 {
 	return QString("Name:\t%1\nUnit:\t%2\nScale:\t%3\nSmoth:\t%4")
 		.arg(mName).arg(mUnit, mScale).arg(mSmooth);
+}
+
+bool AnalogSignal::saveToStream(QDataStream &stream) const
+{
+	stream
+		<< mName
+		<< mUnit
+		<< mSelected
+		<< mFactor
+		<< mScale
+		<< mSmooth
+		<< mMinY
+		<< mMaxY
+		<< mColor.name()
+		<< mData.count();
+
+	for (qreal value : qAsConst(mData)) {
+		stream << value;
+	};
+
+	return true;
+}
+bool AnalogSignal::loadFromStream(QDataStream &stream)
+{
+	QString colorname;
+	qreal value;
+	int count;
+
+	stream
+		>> mName
+		>> mUnit
+		>> mSelected
+		>> mFactor
+		>> mScale
+		>> mSmooth
+		>> mMinY
+		>> mMaxY
+		>> colorname
+		>> count;
+
+	mColor = QColor(colorname);
+
+	mData.clear();
+	mData.reserve(count);
+	for (int i = count; i; i--) {
+		stream >> value;
+		mData.append(value);
+	}
+
+	return true;
 }

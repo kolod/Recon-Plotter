@@ -23,8 +23,8 @@ class ReconTextFile : public DataFile
 {
 	Q_OBJECT
 public:
-	explicit ReconTextFile(QString filename, QObject *parent = nullptr);
-	bool read() override;
+	explicit ReconTextFile(QObject *parent = nullptr);
+	bool importFile(QString filename);
 
 #ifndef TESTING
 private:

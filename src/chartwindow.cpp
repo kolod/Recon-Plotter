@@ -23,12 +23,11 @@
 ChartWindow::ChartWindow(QWidget *parent, Qt::WindowFlags flags)
 	: QMdiSubWindow(parent, flags)
 	, mChart(nullptr)
-    , mDataFile(nullptr)
+	, mDataFile(nullptr)
 {
 	setAttribute(Qt::WA_DeleteOnClose, true);
 	mChartView = new QChartView(this);
 	mChartView->setRenderHint(QPainter::Antialiasing);
-	setWidget(mChartView);
 
 	mTimeAxis = new QValueAxis;
 	mTimeAxis->setLabelFormat("%g");
@@ -47,6 +46,9 @@ ChartWindow::ChartWindow(QWidget *parent, Qt::WindowFlags flags)
 	mChart->addAxis(mTimeAxis   , Qt::AlignBottom);
 	mChart->addAxis(mCurrentAxis, Qt::AlignLeft);
 	mChart->addAxis(mVoltageAxis, Qt::AlignRight);
+
+	mChartView->setChart(mChart);
+	setWidget(mChartView);
 }
 
 void ChartWindow::closeEvent(QCloseEvent *event)
@@ -113,8 +115,5 @@ void ChartWindow::refresh()
 
 	mChart->setTitle(mDataFile->title());
 	mChart->setAnimationOptions(QChart::SeriesAnimations);
-	mChart->legend()->hide();
-	mChart->createDefaultAxes();
 
-	mChartView->setChart(mChart);
 }
