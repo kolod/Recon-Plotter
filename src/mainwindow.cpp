@@ -62,6 +62,7 @@ MainWindow::MainWindow(QWidget *parent)
 	connect(ui->actionSaveAs, &QAction::triggered, this, &MainWindow::actionSaveAs);
 	connect(ui->actionImport, &QAction::triggered, this, &MainWindow::actionImport);
 	connect(ui->actionRefresh, &QAction::triggered, this, &MainWindow::actionRefresh);
+	connect(ui->actionFullscreenMode, &QAction::toggled, this, &MainWindow::actionFullScreen);
 	connect(ui->actionAboutQt, &QAction::triggered, this, [](){qApp->aboutQt();});
 }
 
@@ -86,7 +87,7 @@ void MainWindow::restoreSession()
 	restoreGeometry(settings.value("geometry").toByteArray());
 	restoreState(settings.value("state").toByteArray());
 
-	auto files = settings.value("Opened Files").toStringList();
+	auto files = settings.value("OpenedFiles").toStringList();
 	foreach (auto filename, files) {
 		openFile(filename);
 	}
@@ -113,7 +114,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
 		event->ignore();
 	}
 
-	settings.setValue("Opened Files", files);
+	settings.setValue("OpenedFiles", files);
 }
 
 void MainWindow::actionOpen()
@@ -216,6 +217,27 @@ void MainWindow::actionImport()
 void MainWindow::actionRefresh()
 {
 	activeMdiChild()->refresh();
+}
+
+void MainWindow::actionFullScreen(bool state)
+{
+	static QByteArray previousGeometry;
+	static QByteArray previousState;
+	static bool previousIsMaximized;
+
+	if (state) {
+		previousIsMaximized = isMaximized();
+		previousGeometry = saveGeometry();
+		previousState = saveState();
+		ui->dockSignals->hide();
+		ui->dockPlotSettings->hide();
+		ui->statusbar->hide();
+		showFullScreen();
+	} else {
+		previousIsMaximized ? showMaximized() : show();
+		restoreState(previousState);
+		restoreGeometry(previousGeometry);
+	}
 }
 
 void MainWindow::updateWindowMenu() {

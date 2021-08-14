@@ -234,6 +234,9 @@
    </property>
   </action>
   <action name="actionFullscreenMode">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="icon">
     <iconset resource="icons.qrc">
      <normaloff>:/icons/view-fullscreen-symbolic.svg</normaloff>:/icons/view-fullscreen-symbolic.svg</iconset>

@@ -52,6 +52,7 @@ private slots:
 	void actionSaveAs();
 	void actionImport();
 	void actionRefresh();
+	void actionFullScreen(bool state);
 
 private:
 	Ui::MainWindow *ui;
