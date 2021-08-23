@@ -1,0 +1,14 @@
+{
+  "editor.formatOnSave": true,
+  "editor.formatOnSaveMode": "file",
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "cmake.configureSettings": {
+    "BUILD_TESTING": true,
+    "CODE_COVERAGE": true
+  },
+  "files.associations": {
+    "*.tcc": "cpp",
+    "string": "cpp"
+  },
+  "C_Cpp.clang_format_fallbackStyle": "{\"BasedOnStyle\": \"Google\",\"IndentWidth\": 4}"
+}

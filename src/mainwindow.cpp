@@ -15,26 +15,34 @@
 //    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <QDebug>
+#include <QPainter>
 #include <QtGlobal>
 #include <QPointer>
 #include <QSettings>
 #include <QFileDialog>
+#include <QPrintDialog>
+#include <QProgressDialog>
+#include <QPrintPreviewDialog>
+#include <QProgressDialog>
 #include <QElapsedTimer>
 #include <QStandardPaths>
 #include <QMdiSubWindow>
 #include <QAction>
+#include <QLocalSocket>
 #include "doublelineedit.h"
 #include "mainwindow.h"
-#include "./ui_mainwindow.h"
 #include "utils.h"
+#include "./ui_mainwindow.h"
 
 MainWindow::MainWindow(QWidget *parent)
 	: QMainWindow(parent)
 	, ui(new Ui::MainWindow)
 {
 	ui->setupUi(this);
-	mProgress = new QProgressBar(ui->statusbar);
-	ui->statusbar->addPermanentWidget(mProgress, 1);
+
+#ifndef WIN32
+    setWindowIcon(QIcon(":/icons/appicon.svg"));
+#endif
 
 	connect(ui->menuWindow, &QMenu::aboutToShow, this, &MainWindow::updateWindowMenu);
 	connect(ui->menuPlot, &QMenu::aboutToShow, this, &MainWindow::updatePlotMenu);
@@ -57,13 +65,54 @@ MainWindow::MainWindow(QWidget *parent)
 		}
 	});
 
-	connect(ui->actionOpen, &QAction::triggered, this, &MainWindow::actionOpen);
-	connect(ui->actionSave, &QAction::triggered, this, &MainWindow::actionSave);
-	connect(ui->actionSaveAs, &QAction::triggered, this, &MainWindow::actionSaveAs);
-	connect(ui->actionImport, &QAction::triggered, this, &MainWindow::actionImport);
-	connect(ui->actionRefresh, &QAction::triggered, this, &MainWindow::actionRefresh);
-	connect(ui->actionFullscreenMode, &QAction::toggled, this, &MainWindow::actionFullScreen);
-	connect(ui->actionAboutQt, &QAction::triggered, this, [](){qApp->aboutQt();});
+	connect(ui->actionOpen,           &QAction::triggered, this, &MainWindow::open);
+	connect(ui->actionImport,         &QAction::triggered, this, &MainWindow::import);
+	connect(ui->actionFullscreenMode, &QAction::toggled,   this, &MainWindow::fullScreen);
+	connect(ui->actionAboutQt,        &QAction::triggered, this, [](){qApp->aboutQt();});
+
+	connect(ui->actionPrint,          &QAction::triggered, this, [this](){
+		QPointer<ChartWindow> child = activeMdiChild();
+		if (child) child->print();
+	});
+
+	connect(ui->actionRefresh,        &QAction::triggered, this, [this](){
+		QPointer<ChartWindow> child = activeMdiChild();
+		if (child) child->refresh();
+	});
+
+	connect(ui->actionSave,           &QAction::triggered, this, [this](){
+		QPointer<ChartWindow> child = activeMdiChild();
+		if (child) child->save();
+	});
+
+	connect(ui->actionSaveAs,         &QAction::triggered, this, [this](){
+		QPointer<ChartWindow> child = activeMdiChild();
+		if (child) child->saveAs();
+	});
+
+	mServer = new QLocalServer(this);
+	connect(mServer, &QLocalServer::newConnection, this, [this](){
+		for (;;) {
+			QPointer<QLocalSocket> localSocket = mServer->nextPendingConnection();
+			if (!localSocket) break;
+
+            raise();
+            activateWindow();
+
+			connect(localSocket, &QLocalSocket::disconnected, localSocket, &QLocalSocket::deleteLater);
+			connect(localSocket, &QLocalSocket::readyRead, this, [this, localSocket](){
+				while (localSocket->canReadLine()) {
+					auto line = QString::fromUtf8(localSocket->readLine());
+                    qDebug() << "Read from local connection:" << line;
+					openFile(line.simplified());
+				}
+			});
+		}
+	});
+
+    mServer->listen(str2key(qApp->applicationName()));
+
+    qDebug() << "Opened local socket:" << mServer->fullServerName();
 }
 
 MainWindow::~MainWindow()
@@ -87,10 +136,7 @@ void MainWindow::restoreSession()
 	restoreGeometry(settings.value("geometry").toByteArray());
 	restoreState(settings.value("state").toByteArray());
 
-	auto files = settings.value("OpenedFiles").toStringList();
-	foreach (auto filename, files) {
-		openFile(filename);
-	}
+    foreach (auto filename, filesFromSettings("OpenedFiles")) openFile(filename);
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
@@ -117,7 +163,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
 	settings.setValue("OpenedFiles", files);
 }
 
-void MainWindow::actionOpen()
+void MainWindow::open()
 {
 	QSettings settings;
 	QFileDialog *dialog = new QFileDialog(this);
@@ -144,49 +190,7 @@ void MainWindow::actionOpen()
 	dialog->open();
 }
 
-void MainWindow::actionSave()
-{
-	auto *child = activeMdiChild();
-	if (child == nullptr) return;
-
-	auto *datafile = child->dataFile();
-	if (datafile == nullptr) return;
-
-	if (datafile->isRenameNeeded()) {
-		actionSaveAs();
-	} else {
-		if (datafile->save()) {
-			addToRecent(datafile->fileName());
-		}
-	}
-}
-
-void MainWindow::actionSaveAs()
-{
-	auto *child = activeMdiChild();
-	if (child == nullptr) return;
-
-	auto *datafile = child->dataFile();
-	if (datafile == nullptr) return;
-
-	QFileDialog *dialog = new QFileDialog(this);
-
-	dialog->setNameFilter("Plot Data File (*.plot)");
-	dialog->setAcceptMode(QFileDialog::AcceptSave);
-	dialog->setWindowTitle(tr("Save Plot Data File"));
-	dialog->selectFile(fixFileSuffix(datafile->fileName(), "plot"));
-
-	connect(dialog, &QFileDialog::accepted, this, [this, datafile, dialog]() {
-		auto files = dialog->selectedFiles();
-		if (!files.isEmpty())
-			if (datafile->saveAs(files.first()))
-				addToRecent(files.first());
-	});
-
-	dialog->open();
-}
-
-void MainWindow::actionImport()
+void MainWindow::import()
 {
 	QSettings settings;
 	QFileDialog *dialog = new QFileDialog(this);
@@ -214,16 +218,11 @@ void MainWindow::actionImport()
 	dialog->open();
 }
 
-void MainWindow::actionRefresh()
-{
-	activeMdiChild()->refresh();
-}
-
-void MainWindow::actionFullScreen(bool state)
+void MainWindow::fullScreen(bool state)
 {
 	static QByteArray previousGeometry;
 	static QByteArray previousState;
-	static bool previousIsMaximized;
+	static bool previousIsMaximized = false;
 
 	if (state) {
 		previousIsMaximized = isMaximized();
@@ -234,7 +233,7 @@ void MainWindow::actionFullScreen(bool state)
 		ui->statusbar->hide();
 		showFullScreen();
 	} else {
-		previousIsMaximized ? showMaximized() : show();
+		previousIsMaximized ? showMaximized() : showNormal();
 		restoreState(previousState);
 		restoreGeometry(previousGeometry);
 	}
@@ -288,13 +287,10 @@ void MainWindow::updateFileMenu()
 	}
 
 	// Add items
-	QSettings settings;
-	auto recent = settings.value("Recent").toStringList();
-	foreach (auto filename, recent) {
-		auto *action = new QAction(filename);
-		action->setEnabled(QFileInfo(filename).isReadable());
-		connect(action, &QAction::triggered, this, [this, filename](){openFile(filename);});
-		ui->menuOpenRecent->addAction(action);
+    foreach (auto filename, filesFromSettings("Recent")) {
+        auto *action = new QAction(filename);
+        connect(action, &QAction::triggered, this, [this, filename](){openFile(filename);});
+        ui->menuOpenRecent->addAction(action);
 	}
 
 	// Disable menu if no recent files found
@@ -305,6 +301,7 @@ void MainWindow::updateFileMenu()
 	QPointer<DataFile> datafile = child ? child->dataFile() : nullptr;
 	ui->actionSave->setEnabled(datafile && datafile->isModified());
 	ui->actionSaveAs->setEnabled(datafile);
+	ui->actionPrint->setEnabled(datafile);
 }
 
 void MainWindow::updatePlotMenu()
@@ -316,10 +313,9 @@ void MainWindow::updatePlotMenu()
 }
 
 bool MainWindow::openFile(const QString filename) {
+    if (isFileAlreadyOpen(filename)) return false;  //TODO: Add message
+
 	DataFile *datafile = new DataFile(this);
-	connect(datafile, &DataFile::updateProgressShow , mProgress, &QProgressBar::setVisible);
-	connect(datafile, &DataFile::updateProgressRange, mProgress, &QProgressBar::setRange);
-	connect(datafile, &DataFile::updateProgressValue, mProgress, &QProgressBar::setValue);
 
 	if (datafile->open(filename)) {
 		ChartWindow *newChartWindow = new ChartWindow(this);
@@ -335,11 +331,17 @@ bool MainWindow::openFile(const QString filename) {
 }
 
 bool MainWindow::importReconTextFile(QString filename) {
+    if (isFileAlreadyOpen(filename)) return false;  //TODO: Add message
 
 	auto *datafile = new ReconTextFile(this);
-	connect(datafile, &DataFile::updateProgressShow , mProgress, &QProgressBar::setVisible);
-	connect(datafile, &DataFile::updateProgressRange, mProgress, &QProgressBar::setRange);
-	connect(datafile, &DataFile::updateProgressValue, mProgress, &QProgressBar::setValue);
+
+	QProgressDialog dialog;
+	dialog.setLabelText(tr("Importing %1").arg(filename));
+
+	connect(&dialog, &QProgressDialog::canceled, datafile, &DataFile::cansel);
+	connect(datafile, &DataFile::updateProgressRange, &dialog, &QProgressDialog::setRange);
+	connect(datafile, &DataFile::updateProgressValue, &dialog, &QProgressDialog::setValue);
+	dialog.open();
 
 	if (datafile->importFile(filename)) {
 		ChartWindow *newChartWindow = new ChartWindow(this);
@@ -348,9 +350,11 @@ bool MainWindow::importReconTextFile(QString filename) {
 		newChartWindow->showMaximized();
 		newChartWindow->refresh();
 		updateWindowMenu();
+		dialog.close();
 		return true;
 	}
 
+	dialog.close();
 	return false;
 }
 
@@ -358,11 +362,37 @@ ChartWindow *MainWindow::activeMdiChild() const {
 	return qobject_cast<ChartWindow *>(ui->mdiArea->activeSubWindow());
 }
 
-void MainWindow::addToRecent(QString filename)
-{
-	QSettings settings;
-	auto recent = settings.value("Recent").toStringList();
-	recent.removeAll(filename);
-	recent.prepend(filename);
-	settings.setValue("Recent", recent);
+bool MainWindow::isFileAlreadyOpen(const QString filename) {
+    foreach (auto *child, ui->mdiArea->subWindowList()) {
+        QPointer<ChartWindow> chartwindow = qobject_cast<ChartWindow*>(child);
+        if (chartwindow != nullptr) {
+            QPointer<DataFile> datafile = chartwindow->dataFile();
+            if (datafile) {
+                if (filename == datafile->fileName()) {
+                    qDebug() << "File already opened:" << filename;
+                    chartwindow->activateWindow();
+                    return true;
+                }
+            }
+        }
+    }
+
+    return false;
+}
+
+QStringList MainWindow::filesFromSettings(QString option) {
+    QSettings settings;
+    auto recentfiles = settings.value(option).toStringList();
+    auto count = recentfiles.count();
+
+    recentfiles.removeDuplicates();
+    foreach (auto filename, recentfiles) {
+        QFileInfo fi(filename);
+        if (!fi.exists()) recentfiles.removeOne(filename);
+    }
+
+    if (count != recentfiles.count())
+        settings.setValue(option, recentfiles);
+
+    return recentfiles;
 }

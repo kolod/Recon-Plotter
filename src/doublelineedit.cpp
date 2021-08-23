@@ -41,7 +41,7 @@ DoubleLineEdit::DoubleLineEdit(QWidget *parent)
 	});
 }
 
-qreal DoubleLineEdit::value() const
+double DoubleLineEdit::value() const
 {
 	auto t = text().replace(QLocale().decimalPoint(), QChar('.'));
 	return str2qreal(t, 0.0);

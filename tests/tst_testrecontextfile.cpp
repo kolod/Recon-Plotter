@@ -16,7 +16,9 @@
 
 #include <QtTest>
 #include <QDebug>
-#include "../src/recon_text_file.h"
+#include <QString>
+#include <QStringList>
+#include "../src/recontextfile.h"
 
 // add necessary includes here
 
@@ -25,16 +27,19 @@ class testReconTextFile : public QObject
 	Q_OBJECT
 
 public:
-	testReconTextFile() : mReconTextFile("test_data.txt", this)
+	explicit testReconTextFile(QObject *parent = nullptr)
+		: QObject(parent),
+		  mReconTextFile(this)
 	{
-		QVERIFY(mReconTextFile.read());
+		QVERIFY(mReconTextFile.importFile("test_data.txt"));
 	}
 
 private:
 	ReconTextFile mReconTextFile;
 
 private slots:
-	void test_readCommaSeparatedLine() {
+	void test_readCommaSeparatedLine()
+	{
 		QString testLine = "Ud, N403, 490.WINREC, \"Time, s\", \"Vol\"\"tage, V\", 0, 130, -700, 700";
 		QStringList data = mReconTextFile.readCommaSeparatedLine(testLine);
 
@@ -53,7 +58,8 @@ private slots:
 		QVERIFY(data[8] == "700");
 	}
 
-	void test_read() {
+	void test_read()
+	{
 		QVERIFY(mReconTextFile.analogSignalsCount() == 4);
 		QVERIFY(mReconTextFile.analogSignal(0)->name() == "Ud (UZ1)");
 		QVERIFY(mReconTextFile.analogSignal(0)->unit() == "V");
@@ -61,14 +67,12 @@ private slots:
 		QVERIFY(mReconTextFile.analogSignal(0)->smooth() == 100);
 	}
 
-	void test_read_data() {
+	void test_read_data()
+	{
 		QVERIFY(mReconTextFile.analogSignal(0)->data()->count() == 10);
 		QVERIFY(mReconTextFile.analogSignal(0)->data()->at(0) == -2.314);
-		QVERIFY(mReconTextFile.analogSignal(0)->time(1) == 0.000500);
-		QVERIFY(mReconTextFile.analogSignal(0)->left() == 0);
-		QVERIFY(mReconTextFile.analogSignal(0)->right() == 0.004504);
-		QVERIFY(mReconTextFile.analogSignal(0)->bottom() == -2.314);
-		QVERIFY(mReconTextFile.analogSignal(0)->top() == 2.314);
+		QVERIFY(mReconTextFile.analogSignal(0)->minY() == -2.314);
+		QVERIFY(mReconTextFile.analogSignal(0)->maxY() == 2.314);
 	}
 };
 

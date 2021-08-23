@@ -36,7 +36,7 @@ class DoubleLineEdit : public QLineEdit
 
 public:
 	DoubleLineEdit(QWidget *parent = nullptr);
-	qreal value() const;
+    double value() const;
 
 public slots:
 	void setDecimals(int decimals) {mValidator.setDecimals(decimals);}
@@ -48,4 +48,3 @@ signals:
 private:
 	DoubleValidator mValidator;
 };
-

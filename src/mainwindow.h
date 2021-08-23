@@ -20,13 +20,18 @@
 #include <QCloseEvent>
 #include <QMainWindow>
 #include <QProgressBar>
+#include <QPrinter>
+#include <QLocalServer>
 #include "datafile.h"
 #include "recontextfile.h"
 #include "chartwindow.h"
 #include "signalsmodel.h"
 
 QT_BEGIN_NAMESPACE
-namespace Ui { class MainWindow; }
+namespace Ui
+{
+	class MainWindow;
+}
 QT_END_NAMESPACE
 
 class MainWindow : public QMainWindow
@@ -40,26 +45,25 @@ public:
 	void saveSession();
 	void restoreSession();
 
+public slots:
+	bool openFile(const QString filename);
+
 private slots:
 	void closeEvent(QCloseEvent *event);
-	bool openFile(const QString filename);
 	bool importReconTextFile(QString filename);
 	void updateFileMenu();
 	void updatePlotMenu();
 	void updateWindowMenu();
-	void actionOpen();
-	void actionSave();
-	void actionSaveAs();
-	void actionImport();
-	void actionRefresh();
-	void actionFullScreen(bool state);
+	void open();
+	void import();
+	void fullScreen(bool state);
 
 private:
 	Ui::MainWindow *ui;
-	QProgressBar *mProgress;
 	SignalsModel *mSignalsModel;
+	QLocalServer *mServer;
 
 	ChartWindow *activeMdiChild() const;
-	void addToRecent(QString filename);
+    bool isFileAlreadyOpen(const QString filename);
+    QStringList filesFromSettings(QString option);
 };
-

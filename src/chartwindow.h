@@ -18,35 +18,33 @@
 
 #include <QMdiSubWindow>
 #include <QPointer>
-#include <QChartView>
-#include <QChart>
-#include <QValueAxis>
+#include <QPrinter>
 #include "datafile.h"
+#include "qcustomplot.h"
 
-class ChartWindow : public QMdiSubWindow
-{
-	Q_OBJECT
+class ChartWindow : public QMdiSubWindow {
+    Q_OBJECT
 
-public:
-	explicit ChartWindow(QWidget *parent = nullptr, Qt::WindowFlags flags = Qt::WindowFlags());
+   public:
+    explicit ChartWindow(QWidget *parent = nullptr,
+                         Qt::WindowFlags flags = Qt::WindowFlags());
 
-	DataFile *dataFile() const {return mDataFile;}
-	QString userFriendlyCurrentFile();
-	void setDataFile(DataFile *datafile = nullptr);
-	void refresh();
+    DataFile *dataFile() const { return mDataFile; }
+    QString userFriendlyCurrentFile();
+    void setDataFile(DataFile *datafile = nullptr);
+    void refresh();
 
-public slots:
-	bool loadFile(QString filename);
+   public slots:
+    void save();
+    void saveAs();
+    void print();
 
-protected:
-	void closeEvent(QCloseEvent *event) override;
+   protected:
+    void closeEvent(QCloseEvent *event) override;
 
-private:
-	bool maybeSave();
-	QChart *mChart;
-	QChartView *mChartView;
-	DataFile *mDataFile;
-	QValueAxis *mTimeAxis;
-	QValueAxis *mVoltageAxis;
-	QValueAxis *mCurrentAxis;
+   private:
+    DataFile *mDataFile;
+    QCustomPlot mChartView;
+
+    bool maybeSave();
 };

@@ -22,44 +22,44 @@
 #include <QtCharts/QLineSeries>
 #include "analogsignal.h"
 
-#if QT_VERSION_MAJOR < 6
-using namespace QtCharts;
-#endif
-
 class DataFile : public QObject
 {
 	Q_OBJECT
 
 public:
 	explicit DataFile(QObject *parent = nullptr);
-	int analogSignalsCount() {return mAnalogSignals.count();}
-	AnalogSignal *analogSignal(int channel) {return mAnalogSignals[channel];}
-	QString fileName() const {return mFileName;}
-	QString title() const {return mTitle;}
-	QString device() const {return mDevice;}
 
-	// Signal limits
-	double minX()   {return mMinX;}
-	double maxX()   {return mMaxX;}
-	double minY()   {return mMinY;}
-	double maxY()   {return mMaxY;}
+    auto fileName()       const {return mFileName;}
+    auto title()          const {return mTitle;}
+    auto device()         const {return mDevice;}
+	auto &time()                {return mTime;}
+    auto minX()           const {return mMinX;}
+    auto maxX()           const {return mMaxX;}
+    auto minY()           const {return mMinY;}
+    auto maxY()           const {return mMaxY;}
+    auto left()           const {return mLeft;}
+    auto right()          const {return mRight;}
+    auto bottom()         const {return mBottom;}
+    auto top()            const {return mTop;}
+    bool isRenameNeeded() const {return !mFileName.endsWith(".plot");}
+	bool isModified()     const {return mModified;}
 
-	// Plot window limits
-	double left()   {return mLeft;}
-	double right()  {return mRight;}
-	double bottom() {return mBottom;}
-	double top()    {return mTop;}
+	auto analogSignalsCount() {return mAnalogSignals.count();}
+	auto *analogSignal(int channel) {return mAnalogSignals[channel];}
 
 	bool save();
 	bool saveAs(QString filename);
 	bool open(QString filename);
-	bool isModified() const {return mModified;}
-	void setModified() {
-		mModified = true;
-		emit modifiedChanged(true);
+	void calculateLimits();
+	void resetWindow();
+
+    void setModified(bool modified=true) {
+        mModified = modified;
+        emit modifiedChanged(modified);
 	}
 
-	bool isRenameNeeded() const {return mRenameNeeded;}
+public slots:
+	void cansel() {mCansel = true;}
 
 protected:
 	QString mFileName;
@@ -77,9 +77,9 @@ protected:
 	double mMinY;
 	double mMaxY;
 	QList<AnalogSignal*> mAnalogSignals;
-	QList<qreal> mTime;
-	bool mModified;
-	bool mRenameNeeded;
+	QVector<double> mTime;
+    bool mModified;
+	bool mCansel;
 
 signals:
 	void updateProgressShow(bool state);

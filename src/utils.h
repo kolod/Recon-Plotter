@@ -17,6 +17,8 @@
 #pragma once
 
 #include <QString>
+#include <QRect>
+#include <QRectF>
 
 double prettyFloor(double value, int places = 2);
 double prettyCeil(double value, int places = 2);
@@ -27,3 +29,13 @@ int str2int(const QString str, int byDefault = 0);
 unsigned int str2uint(const QString str, unsigned int byDefault = 0);
 
 QString fixFileSuffix(QString filename, const QString suffix);
+void addToRecent(QString filename);
+
+void multyply(QVector<double> &data, const double multiplier);
+QString str2key(QString value);
+
+#ifdef WIN32
+void registerFileAsossiation(const QString suffix);
+#else
+#define registerFileAsossiation(x)
+#endif

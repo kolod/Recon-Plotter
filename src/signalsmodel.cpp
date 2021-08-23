@@ -51,7 +51,7 @@ QVariant SignalsModel::headerData(int section, Qt::Orientation orientation, int 
 	} else if (role == Qt::TextAlignmentRole) {
 		if (orientation == Qt::Horizontal) {
 			switch (static_cast<SignalsModelColumn>(section)) {
-				case SignalsModelColumn::Name:     return Qt::AlignLeft + Qt::AlignVCenter;
+				case SignalsModelColumn::Name:     return 0;
 				default:                           return Qt::AlignCenter;
 			}
 		}
@@ -114,7 +114,7 @@ QVariant SignalsModel::data(const QModelIndex &index, int role) const
 		}
 	} else if (role == Qt::TextAlignmentRole) {
 		switch (static_cast<SignalsModelColumn>(index.column())) {
-			case SignalsModelColumn::Name:     return Qt::AlignLeft + Qt::AlignVCenter;
+			case SignalsModelColumn::Name:     return 0;
 			default:                           return Qt::AlignCenter;
 		}
 	}

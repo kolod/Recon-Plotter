@@ -14,106 +14,176 @@
 //    You should have received a copy of the GNU General Public License
 //    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include <QFileInfo>
-#include <QMessageBox>
-#include <QMdiSubWindow>
 #include "chartwindow.h"
+
+#include <QDebug>
+#include <QFileInfo>
+#include <QLayout>
+#include <QMargins>
+#include <QMdiSubWindow>
+#include <QMessageBox>
+#include <QPointer>
+#include <QPrintPreviewDialog>
+
 #include "analogsignal.h"
+#include "utils.h"
 
 ChartWindow::ChartWindow(QWidget *parent, Qt::WindowFlags flags)
-	: QMdiSubWindow(parent, flags)
-	, mChart(nullptr)
-	, mDataFile(nullptr)
-{
-	setAttribute(Qt::WA_DeleteOnClose, true);
-	mChartView = new QChartView(this);
-	mChartView->setRenderHint(QPainter::Antialiasing);
+    : QMdiSubWindow(parent, flags), mDataFile(nullptr) {
+    setAttribute(Qt::WA_DeleteOnClose, true);
 
-	mTimeAxis = new QValueAxis;
-	mTimeAxis->setLabelFormat("%g");
-	mTimeAxis->setTitleText(tr("Time, S"));
+    mChartView.setInteractions(QCP::iRangeDrag | QCP::iRangeZoom |
+                               QCP::iSelectPlottables | QCP::iMultiSelect);
+    mChartView.xAxis->setLabel(tr("Time, s"));
+    mChartView.yAxis->setLabel(tr("Voltage, V"));
 
-	mVoltageAxis = new QValueAxis;
-	mVoltageAxis->setTitleText(tr("Voltage, V"));
-	mVoltageAxis->setGridLineVisible();
-	mVoltageAxis->setMinorTickCount(4);
-
-	mCurrentAxis = new QValueAxis;
-	mCurrentAxis->setTitleText(tr("Current, A"));
-	mCurrentAxis->setGridLineVisible();
-	mCurrentAxis->setMinorTickCount(4);mChart = new QChart;
-
-	mChart->addAxis(mTimeAxis   , Qt::AlignBottom);
-	mChart->addAxis(mCurrentAxis, Qt::AlignLeft);
-	mChart->addAxis(mVoltageAxis, Qt::AlignRight);
-
-	mChartView->setChart(mChart);
-	setWidget(mChartView);
+    setWidget(&mChartView);
 }
 
-void ChartWindow::closeEvent(QCloseEvent *event)
-{
-	if (maybeSave()) {
-		QMdiSubWindow::closeEvent(event);
-		event->accept();
-	} else {
-		event->ignore();
-	}
+void ChartWindow::closeEvent(QCloseEvent *event) {
+    if (maybeSave()) {
+        QMdiSubWindow::closeEvent(event);
+        event->accept();
+    } else {
+        event->ignore();
+    }
 }
 
-bool ChartWindow::loadFile(QString filename)
-{
-	return false;
+void ChartWindow::setDataFile(DataFile *datafile) {
+    if (mDataFile != nullptr) delete mDataFile;
+
+    mDataFile = datafile;
+
+    if (mDataFile != nullptr) {
+        connect(mDataFile, &DataFile::modifiedChanged, this,
+                &QMdiSubWindow::setWindowModified);
+        setWindowTitle(mDataFile->fileName() + "[*]");
+    }
 }
 
-void ChartWindow::setDataFile(DataFile *datafile)
-{
-	if (mDataFile != nullptr)
-		delete mDataFile;
-
-	mDataFile = datafile;
-
-	if (mDataFile != nullptr) {
-		connect(mDataFile, &DataFile::modifiedChanged, this, &QMdiSubWindow::setWindowModified);
-		setWindowTitle(mDataFile->fileName() + "[*]");
-	}
-}
-
-QString ChartWindow::userFriendlyCurrentFile(){
-	return QFileInfo(mDataFile->fileName()).fileName();
+QString ChartWindow::userFriendlyCurrentFile() {
+    return QFileInfo(mDataFile->fileName()).fileName();
 };
 
-bool ChartWindow::maybeSave()
-{
-	if (mDataFile->isModified()) {
-		switch (QMessageBox::warning(this,
-			tr("Recon Plotter"),
-			tr("'%1' has been modified.\nDo you want to save your changes?").arg(mDataFile->fileName()),
-			QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel
-		)) {
-			case QMessageBox::Save: return mDataFile->save();
-			case QMessageBox::Cancel: return false;
-			default: break;
-		}
-	}
-	return true;
+bool ChartWindow::maybeSave() {
+    if (mDataFile->isModified()) {
+        switch (QMessageBox::warning(
+            this, tr("Recon Plotter"),
+            tr("'%1' has been modified.\nDo you want to save your changes?")
+                .arg(mDataFile->fileName()),
+            QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel)) {
+            case QMessageBox::Save:
+                save();
+                return true;
+            case QMessageBox::Cancel:
+                return false;
+            default:
+                break;
+        }
+    }
+    return true;
 }
 
-void ChartWindow::refresh()
-{
-	mChart->removeAllSeries();
+void ChartWindow::save() {
+    if (mDataFile != nullptr) {
+        if (mDataFile->isRenameNeeded()) {
+            saveAs();
+        } else {
+            if (mDataFile->save()) {
+                addToRecent(mDataFile->fileName());
+            }
+        }
+    }
+}
 
-	for (qsizetype i = 0; i < mDataFile->analogSignalsCount(); i++) {
-		auto *signal = mDataFile->analogSignal(i);
-		if (signal->selected()) {
-			auto line = signal->lineSeries();
-			mChart->addSeries(line);
-			if (mVoltageAxis != nullptr) line->attachAxis(mVoltageAxis);
-			if (mTimeAxis != nullptr) line->attachAxis(mTimeAxis);
-		}
-	}
+void ChartWindow::saveAs() {
+    if (mDataFile != nullptr) {
+        QFileDialog *dialog = new QFileDialog(this);
 
-	mChart->setTitle(mDataFile->title());
-	mChart->setAnimationOptions(QChart::SeriesAnimations);
+        dialog->setNameFilter("Plot Data File (*.plot)");
+        dialog->setAcceptMode(QFileDialog::AcceptSave);
+        dialog->setWindowTitle(tr("Save Plot Data File"));
+        dialog->selectFile(fixFileSuffix(mDataFile->fileName(), "plot"));
 
+        connect(dialog, &QFileDialog::accepted, this, [this, dialog]() {
+            auto files = dialog->selectedFiles();
+            if (!files.isEmpty())
+                if (mDataFile->saveAs(files.first()))
+                    addToRecent(files.first());
+        });
+
+        dialog->open();
+    }
+}
+
+void ChartWindow::refresh() {
+    mChartView.clearGraphs();
+    mChartView.xAxis->setRange(mDataFile->left(), mDataFile->right());
+    mChartView.yAxis->setRange(mDataFile->bottom(), mDataFile->top());
+    mChartView.legend->setVisible(true);
+
+    for (qsizetype i = 0; i < mDataFile->analogSignalsCount(); i++) {
+        auto *signal = mDataFile->analogSignal(i);
+        if (signal->selected()) {
+            auto *graph = mChartView.addGraph();
+            graph->setData(mDataFile->time(), signal->smoothed(), true);
+            graph->setName(signal->name(true));
+            graph->setPen(QPen(signal->color()));
+            graph->setVisible(true);
+        }
+    }
+
+    mChartView.replot();
+}
+
+void ChartWindow::print() {
+    auto *dialog = new QPrintPreviewDialog(
+        this, Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint);
+    if (dialog != nullptr) {
+        QPrinter *printer = dialog->printer();
+        if (printer != nullptr) {
+            printer->setPageOrientation(QPageLayout::Landscape);
+            printer->setResolution(600);
+        }
+
+        connect(dialog, &QPrintPreviewDialog::paintRequested, this,
+                [this](QPrinter *printer) {
+                    QCPPainter painter;
+                    painter.begin(printer);
+                    painter.setCompositionMode(
+                        QPainter::CompositionMode_SourceAtop);
+
+                    auto rect = printer->pageLayout().paintRectPixels(
+                        printer->resolution());
+                    // auto rect = printer->pageLayout().paintRectPoints();
+
+                    double factor = 1.00;
+
+                    painter.save();
+                    painter.scale(factor, factor);
+
+                    qDebug()
+                        << "Painter window            :" << painter.window()
+                        << Qt::endl
+                        << "Painter viewport          :" << painter.viewport()
+                        << Qt::endl
+                        << "Printer page size         :"
+                        << printer->pageLayout().pageSize() << Qt::endl
+                        << "Printer paint rect        :"
+                        << printer->pageLayout().paintRect() << Qt::endl
+                        << "Printer paint rect pixels :"
+                        << printer->pageLayout().paintRectPixels(
+                               printer->resolution())
+                        << Qt::endl
+                        << "Printer paint rect points :"
+                        << printer->pageLayout().paintRectPoints() << Qt::endl;
+
+                    mChartView.toPainter(&painter, rect.width(), rect.height());
+                    painter.restore();
+
+                    painter.end();
+                });
+
+        dialog->open();
+    }
 }

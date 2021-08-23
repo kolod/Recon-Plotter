@@ -18,6 +18,7 @@
 #include <QDebug>
 #include <QFile>
 #include <QDataStream>
+#include "utils.h"
 #include "analogsignal.h"
 #include "datafile.h"
 
@@ -28,9 +29,37 @@ DataFile::DataFile(QObject *parent)
 	: QObject(parent)
 	, mFileName("")
 	, mTime()
-	, mModified(false)
-	, mRenameNeeded(false)
+    , mModified(false)
+	, mCansel(false)
 {}
+
+void DataFile::calculateLimits()
+{
+	mMinY = mMinX = qInf();
+	mMaxY = mMaxX = -qInf();
+
+	if (!mTime.isEmpty()) {
+		mMinX = mTime.at(0);
+		mMaxX = mTime.at(mTime.count() - 1);
+	}
+
+	for (qsizetype i = 0; i < mAnalogSignals.count(); i++) {
+		mAnalogSignals.at(i)->calculateLimits();
+		mMinY = qMin(mMinY, mAnalogSignals.at(i)->minY());
+		mMaxY = qMax(mMaxY, mAnalogSignals.at(i)->maxY());
+	}
+}
+
+void DataFile::resetWindow()
+{
+    if (!qIsFinite(mMinX) || !qIsFinite(mMaxX) || !qIsFinite(mMinY) || !qIsFinite(mMaxY))
+        calculateLimits();
+
+	mLeft   = prettyFloor(mMinX);
+	mRight  = prettyCeil(mMaxX);
+	mBottom = prettyFloor(mMinY);
+	mTop    = prettyCeil(mMaxY);
+}
 
 bool DataFile::save()
 {
@@ -70,21 +99,20 @@ bool DataFile::saveAs(QString filename)
 		<< mMaxX
 		<< mMinY
 		<< mMaxY
-		<< mTime.count();
+		<< static_cast<quint64>(mTime.count());
 
 	for (qreal value : qAsConst(mTime)) {
 		datastream << value;
 	}
 
-	datastream << mAnalogSignals.count();
+	datastream << static_cast<quint64>(mAnalogSignals.count());
 	foreach (auto *signal, mAnalogSignals) {
 		signal->saveToStream(datastream);
 	}
 
 	if (datafile.write(qCompress(data)) > 0) {
-		mFileName = filename;
-		mRenameNeeded = mModified = false;
-		emit modifiedChanged(false);
+        mFileName = filename;
+        setModified(false);
 		return true;
 	}
 
@@ -105,7 +133,7 @@ bool DataFile::open(QString filename)
 
 	quint32 magic;
 	quint32 version;
-	int count;
+	quint64 count;
 	qreal value;
 
 	datastream >> magic;
@@ -154,9 +182,14 @@ bool DataFile::open(QString filename)
 		mAnalogSignals.append(signal);
 	}
 
+	if (qIsInf(mMinX) || qIsInf(mMaxX) || qIsInf(mMinY) || qIsInf(mMaxY) ||
+		qIsNaN(mMinX) || qIsNaN(mMaxX) || qIsNaN(mMinY) || qIsNaN(mMaxY)) {
+			calculateLimits();
+			resetWindow();
+	}
+
 	mFileName = filename;
-	mModified = false;
-	emit modifiedChanged(false);
+    setModified(false);
 
 	return true;
 }

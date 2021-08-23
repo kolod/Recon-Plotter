@@ -1,20 +1,11 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.12)
 
 project(application VERSION 0.1 LANGUAGES CXX)
 
-set(PROJECT_NAME "Recon Plotter")
-set(PROJECT_DESCRIPTION "Qt-based application for the processing signal recorder 'RECON' data and plotting.")
-set(PROJECT_AUTHOR "Oleksandr Kolodkin")
-set(PROJECT_URL "https://github.com/kolod/Recon-Plotter")
-set(PROJECT_VERSION_MAJOR 1)
-set(PROJECT_VERSION_MINOR 0)
-set(PROJECT_VERSION_PATCH 1)
-set(PROJECT_VERSION ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH})
-
-set(TS_FILES 
-	recon-plotter_ru.ts
-	recon-plotter_ua.ts
-	recon-plotter_de.ts
+set(TS_FILES
+	resources/i18n/recon-plotter_ru.ts
+	resources/i18n/recon-plotter_ua.ts
+	resources/i18n/recon-plotter_de.ts
 )
 
 set_source_files_properties(${TS_FILES}
@@ -23,19 +14,20 @@ set_source_files_properties(${TS_FILES}
 )
 
 set(QRC_FILES
-	icons.qrc
-	translations.qrc
+	resources/resources.qrc
+	resources/translations.qrc
 )
 
-set(APP_ICON_RESOURCE_WINDOWS "")
-if(WIN32)
-	set(APP_ICON_RESOURCE_WINDOWS "${CMAKE_CURRENT_SOURCE_DIR}/appicon.rc")
+if(NOT WIN32)
+	list(APPEND QRC_FILES resources/linuxresources.qrc)
 endif()
 
 set(PROJECT_SOURCES
 	main.cpp
 	utils.h
 	utils.cpp
+	localsocket.h
+	localsocket.cpp
 	analogsignal.h
 	analogsignal.cpp
 	doublelineedit.h
@@ -51,32 +43,35 @@ set(PROJECT_SOURCES
 	mainwindow.cpp
 	mainwindow.h
 	mainwindow.ui
-	${TS_FILES}
-	${APP_ICON_RESOURCE_WINDOWS}
+	qcustomplot.h
+	qcustomplot.cpp
 )
 
-qt_add_binary_resources(resources ${QRC_FILES})
-qt_add_resources(PROJECT_SOURCES ${QRC_FILES})
+if(WIN32)
+	list(APPEND PROJECT_SOURCES resources/resources.rc)
+endif()
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
+	qt_add_binary_resources(resources ${QRC_FILES})
+	qt_add_resources(PROJECT_SOURCES ${QRC_FILES})
 	qt_add_executable(application MANUAL_FINALIZATION ${PROJECT_SOURCES})
 	qt_create_translation(QM_FILES ${CMAKE_SOURCE_DIR} ${TS_FILES})
 else()
+	qt5_add_binary_resources(resources ${QRC_FILES})
+	qt5_add_resources(PROJECT_SOURCES ${QRC_FILES})
 	if(ANDROID)
 		add_library(application SHARED ${PROJECT_SOURCES})
 	else()
 		add_executable(application ${PROJECT_SOURCES})
 	endif()
-
 	qt5_create_translation(QM_FILES ${CMAKE_SOURCE_DIR} ${TS_FILES})
 endif()
 
 add_dependencies(application resources)
 
-target_link_libraries(application PRIVATE 
-	Qt${QT_VERSION_MAJOR}::Widgets
-	Qt${QT_VERSION_MAJOR}::Charts
-)
+target_link_libraries(application PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
+target_link_libraries(application PRIVATE Qt${QT_VERSION_MAJOR}::Network)
+target_link_libraries(application PRIVATE Qt${QT_VERSION_MAJOR}::PrintSupport)
 
 set_target_properties(application PROPERTIES
 	MACOSX_BUNDLE_GUI_IDENTIFIER my.example.com

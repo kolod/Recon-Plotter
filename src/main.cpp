@@ -14,7 +14,6 @@
 //    You should have received a copy of the GNU General Public License
 //    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include "mainwindow.h"
 
 #include <QDebug>
 #include <QApplication>
@@ -24,6 +23,9 @@
 #include <QLibraryInfo>
 #include <QCommandLineParser>
 #include <QCommandLineOption>
+#include "utils.h"
+#include "mainwindow.h"
+#include "localsocket.h"
 
 
 QString qtTranslationsPath() {
@@ -40,18 +42,24 @@ int main(int argc, char *argv[])
 
 	a.setApplicationName("Recon Plotter");
 	a.setOrganizationName("Alexandr Kolodkin");
-	a.setApplicationVersion("1.0");
-	a.setStyle(QStyleFactory::create("Fusion"));
+    a.setApplicationVersion("1.0");
 
-	QCommandLineParser parser;
-	parser.setApplicationDescription("Recon Plotter");
-	parser.addHelpOption();
-	parser.addVersionOption();
-	parser.addPositionalArgument("file", "The file to open.");
-	parser.process(a);
+    QCommandLineParser parser;
+    parser.setApplicationDescription("Recon Plotter");
+    parser.addHelpOption();
+    parser.addVersionOption();
+    parser.addPositionalArgument("file", a.translate("main", "The file to open."), "[file...]");
+    parser.process(a);
+
+    auto files = parser.positionalArguments();
+    if (trySendFilesPreviouslyOpenedApplication(files)) return 0;
+
+    a.setStyle(QStyleFactory::create("Fusion"));
+
+	registerFileAsossiation("plot");
 
 	QTranslator qtTranslator;
-	if (qtTranslator.load(
+    if (qtTranslator.load(
 		QLocale(),
 		QLatin1String("qt"),
 		QLatin1String("_"),
@@ -74,10 +82,14 @@ int main(int argc, char *argv[])
 		qDebug() << "Application translator installed.";
 	} else {
 		qDebug() << "Application translator not found.";
-	}
+    }
 
 	MainWindow w;
+
 	w.show();
 	w.restoreSession();
+
+	foreach (auto filename, files) w.openFile(filename);
+
 	return a.exec();
 }

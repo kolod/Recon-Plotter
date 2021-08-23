@@ -14,21 +14,27 @@
 //    You should have received a copy of the GNU General Public License
 //    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include "utils.h"
 
 #include <cmath>
 #include <array>
+#include <QDebug>
 #include <QDir>
 #include <QFileInfo>
 #include <QStringList>
+#include <QSettings>
+//#include <QApplication>
+#include <QRegularExpression>
+#include "utils.h"
 
 double prettyFloor(double value, int places) {
+    if (qIsNull(value) || !qIsFinite(value)) return value;
 	double f = std::pow(10, std::round(std::log10(std::fabs(value))) - places + 1);
 	double result = std::floor(value / f) * f;
 	return result;
 }
 
 double prettyCeil(double value, int places) {
+    if (qIsNull(value) || !qIsFinite(value)) return value;
 	double f = std::pow(10, std::round(std::log10(std::fabs(value))) - places + 1);
 	double result = std::ceil(value / f) * f;
 	return result;
@@ -72,3 +78,48 @@ QString fixFileSuffix(QString filename, const QString suffix)
 
 	return filename;
 }
+
+void addToRecent(QString filename)
+{
+	QSettings settings;
+	auto recent = settings.value("Recent").toStringList();
+	recent.removeAll(filename);
+	recent.prepend(filename);
+	settings.setValue("Recent", recent);
+}
+
+void multyply(QVector<double> &data, const double multiplier)
+{
+	//TODO: add multythread
+	if (multiplier != 1.0) for (qsizetype i = 0; i < data.count(); i++) {
+		data[i] = data.at(i) * multiplier;
+	}
+}
+
+QString str2key(QString value)
+{
+	return value.toLower().replace(QRegularExpression("\\s+"), "_");
+}
+
+#ifdef WIN32
+void registerFileAsossiation(const QString suffix)
+{
+	QSettings settings("HKEY_CURRENT_USER\\SOFTWARE\\CLASSES", QSettings::NativeFormat);
+
+	QString path = QDir::toNativeSeparators(qApp->applicationFilePath());
+	QString name = QString("%1.%2.v%3").arg(
+		str2key(qApp->organizationName()),
+		str2key(qApp->applicationName()),
+		str2key(qApp->applicationVersion()
+	));
+
+	qDebug()
+		<< "Register File Asossiation:" << Qt::endl
+		<< "  Name = " << name << Qt::endl
+		<< "  Path = " << path << Qt::endl;
+
+	settings.setValue("." + suffix + "/.", name);
+	settings.setValue("." + suffix + "/DefaultIcon/.", path);
+	settings.setValue(name + "/shell/open/command/.", path + " %1");
+}
+#endif

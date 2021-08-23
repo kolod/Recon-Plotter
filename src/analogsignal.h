@@ -22,10 +22,6 @@
 #include <QColor>
 #include <QtCharts/QLineSeries>
 
-#if QT_VERSION_MAJOR < 6
-using namespace QtCharts;
-#endif
-
 class AnalogSignal : public QObject
 {
 	Q_OBJECT
@@ -33,41 +29,36 @@ class AnalogSignal : public QObject
 public:
 	AnalogSignal(QObject *parent = nullptr);
 
-	QString name(bool legend = false) const;
-
-	QString unit()  const {return mUnit;}
-	QColor color()  const {return mColor;}
-	bool selected() const {return mSelected;}
-	double factor() const {return mFactor;}
-	double scale()  const {return mScale;}
-	double minY()   const {return mMinY;}
-	double maxY()   const {return mMaxY;}
-
-	QList<qreal> *data() {return &mData;}
-	size_t dataCount() const {return mData.count();}
-	unsigned int smooth() const {return mSmooth;}
-	qreal time(int index) {return (mTime && (index < mTime->count()))? mTime->at(index) : qSNaN();}
-
-	QLineSeries *lineSeries();
+	QString name(const bool legend = false) const;
 	QString toString();
-
 	bool saveToStream(QDataStream &stream) const;
 	bool loadFromStream(QDataStream &stream);
 
+	auto unit()      const {return mUnit;}
+	auto color()     const {return mColor;}
+	auto selected()  const {return mSelected;}
+	auto factor()    const {return mFactor;}
+	auto scale()     const {return mScale;}
+	auto minY()      const {return mMinY * mFactor;}
+	auto maxY()      const {return mMaxY * mFactor;}
+	auto *data()           {return &mData;}
+	auto dataCount() const {return mData.count();}
+	auto smooth()    const {return mSmooth;}
+
 public slots:
-	void setTime(QList<qreal> *time)          { mTime = time;}
-	void setName(const QString name)          { mName = name;}
-	void setUnit(const QString unit)          { mUnit = unit;}
-	void setFactor(const qreal factor)        { mFactor = factor;}
-	void setScale(const qreal scale)          { mScale = scale;}
-	void setSelected(const bool selected)     { mSelected = selected;}
-	void setColor(const QColor color)         { mColor = color;}
-	void setSmooth(const unsigned int smooth) { if (smooth > 0) mSmooth = smooth;}
+	void setTime(QVector<double> *time)   { mTime = time;}
+	void setName(const QString name)      { mName = name;}
+	void setUnit(const QString unit)      { mUnit = unit;}
+	void setFactor(const qreal factor)    { mFactor = factor;}
+	void setScale(const qreal scale)      { mScale = scale;}
+	void setSelected(const bool selected) { mSelected = selected;}
+	void setColor(const QColor color)     { mColor = color;}
+	void setSmooth(const quint64 smooth)  { if (smooth > 0) mSmooth = smooth;}
 
 	void clear();
 	void invert();
 	void calculateLimits();
-	QList<qreal> *smoothed();
+	QVector<double> &smoothed();
 
 private:
 	QString mName;
@@ -75,10 +66,14 @@ private:
 	QColor mColor;
 	double mFactor;         // ADC factor
 	double mScale;          // Scale for plot
-	unsigned int mSmooth;
+	quint64 mSmooth;
 	bool mSelected;
-	QList<qreal> mData;
-	QList<qreal> *mTime;
-	qreal mMinY;
-	qreal mMaxY;
+	QVector<double> mData;
+	QVector<double> *mTime;
+	double mMinY;
+	double mMaxY;
+
+	double mMutyplierCache;
+	unsigned int mSmoothCache;
+	QVector<double> mDataCache;
 };

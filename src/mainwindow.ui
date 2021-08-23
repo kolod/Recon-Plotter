@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>566</width>
-    <height>424</height>
+    <width>970</width>
+    <height>613</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -40,8 +40,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>566</width>
-     <height>20</height>
+     <width>970</width>
+     <height>23</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -66,6 +66,8 @@
     <addaction name="separator"/>
     <addaction name="actionImport"/>
     <addaction name="separator"/>
+    <addaction name="actionPrint"/>
+    <addaction name="separator"/>
     <addaction name="actionQuit"/>
    </widget>
    <widget class="QMenu" name="menuPlot">
@@ -73,6 +75,7 @@
      <string>&amp;Plot</string>
     </property>
     <addaction name="actionRefresh"/>
+    <addaction name="actionAutoScale"/>
    </widget>
    <widget class="QMenu" name="menuView">
     <property name="title">
@@ -176,7 +179,7 @@
   </widget>
   <action name="actionOpen">
    <property name="icon">
-    <iconset resource="icons.qrc">
+    <iconset resource="resources.qrc">
      <normaloff>:/icons/document-open-symbolic.svg</normaloff>:/icons/document-open-symbolic.svg</iconset>
    </property>
    <property name="text">
@@ -188,7 +191,7 @@
   </action>
   <action name="actionSave">
    <property name="icon">
-    <iconset resource="icons.qrc">
+    <iconset resource="resources.qrc">
      <normaloff>:/icons/document-save-symbolic.svg</normaloff>:/icons/document-save-symbolic.svg</iconset>
    </property>
    <property name="text">
@@ -200,7 +203,7 @@
   </action>
   <action name="actionSaveAs">
    <property name="icon">
-    <iconset resource="icons.qrc">
+    <iconset resource="resources.qrc">
      <normaloff>:/icons/document-save-as-symbolic.svg</normaloff>:/icons/document-save-as-symbolic.svg</iconset>
    </property>
    <property name="text">
@@ -220,7 +223,7 @@
   </action>
   <action name="actionQuit">
    <property name="icon">
-    <iconset resource="icons.qrc">
+    <iconset resource="resources.qrc">
      <normaloff>:/icons/window-close-symbolic.svg</normaloff>:/icons/window-close-symbolic.svg</iconset>
    </property>
    <property name="text">
@@ -238,7 +241,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="icons.qrc">
+    <iconset resource="resources.qrc">
      <normaloff>:/icons/view-fullscreen-symbolic.svg</normaloff>:/icons/view-fullscreen-symbolic.svg</iconset>
    </property>
    <property name="text">
@@ -278,7 +281,7 @@
   </action>
   <action name="actionShowManual">
    <property name="icon">
-    <iconset resource="icons.qrc">
+    <iconset resource="resources.qrc">
      <normaloff>:/icons/help-contents-symbolic.svg</normaloff>:/icons/help-contents-symbolic.svg</iconset>
    </property>
    <property name="text">
@@ -290,7 +293,7 @@
   </action>
   <action name="actionAbout">
    <property name="icon">
-    <iconset resource="icons.qrc">
+    <iconset resource="resources.qrc">
      <normaloff>:/icons/help-about-symbolic.svg</normaloff>:/icons/help-about-symbolic.svg</iconset>
    </property>
    <property name="text">
@@ -349,7 +352,7 @@
   </action>
   <action name="actionRefresh">
    <property name="icon">
-    <iconset resource="icons.qrc">
+    <iconset resource="resources.qrc">
      <normaloff>:/icons/view-refresh-symbolic.svg</normaloff>:/icons/view-refresh-symbolic.svg</iconset>
    </property>
    <property name="text">
@@ -359,9 +362,22 @@
     <string>F5</string>
    </property>
   </action>
+  <action name="actionPrint">
+   <property name="text">
+    <string>&amp;Print...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+P</string>
+   </property>
+  </action>
+  <action name="actionAutoScale">
+   <property name="text">
+    <string>Auto scale</string>
+   </property>
+  </action>
  </widget>
  <resources>
-  <include location="icons.qrc"/>
+  <include location="resources.qrc"/>
  </resources>
  <connections>
   <connection>

@@ -15,7 +15,6 @@
 //    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <QDebug>
-#include <QLineSeries>
 #include <QElapsedTimer>
 #include <QSharedPointer>
 #include <QCoreApplication>
@@ -28,6 +27,8 @@ ReconTextFile::ReconTextFile(QObject *parent)
 
 bool ReconTextFile::importFile(QString filename)
 {
+	mCansel = false;
+
 	// Clear data
 	foreach (auto item, mAnalogSignals) if (item != nullptr) delete item;
 	mAnalogSignals.clear();
@@ -79,7 +80,8 @@ bool ReconTextFile::importFile(QString filename)
 				}
 			}
 
-			auto analogSignal = new AnalogSignal();
+			auto analogSignal = new AnalogSignal(this);
+			analogSignal->setTime(&mTime);
 			mAnalogSignals.append(analogSignal);
 
 			analogSignal->setScale(1.0);
@@ -107,6 +109,9 @@ bool ReconTextFile::importFile(QString filename)
 
 		// Read data
 		for (;;) {
+			// Cansel
+			if (mCansel) break;
+
 			line = QString::fromLocal8Bit(datafile.readLine()).simplified();
 			QStringList values = line.split(',');
 			if (values.count() != (mAnalogSignals.count() + 3)) break;  //TODO: Fix for discrete signals
@@ -131,33 +136,19 @@ bool ReconTextFile::importFile(QString filename)
 			}
 		}
 
-		// Close file
-		datafile.close();
+		if (!mCansel) {
+			datafile.close();
 
-		// Calculate plot limits
-		mMinX = mTime.first();
-		mMaxX = mTime.last();
-		mMinY = -qInf();
-		mMaxY = qInf();
-		for (qsizetype i = 0; i < mAnalogSignals.count(); i++) {
-			mAnalogSignals[i]->setTime(&mTime);
-			mAnalogSignals[i]->calculateLimits();
-			if (mAnalogSignals[i]->minY() < mMinY) mMinY = mAnalogSignals[i]->minY();
-			if (mAnalogSignals[i]->maxY() < mMaxY) mMaxY = mAnalogSignals[i]->maxY();
+			calculateLimits();
+			resetWindow();
+
+            mFileName = filename;
+            setModified(false);
+
+            emit updateProgressShow(false);
+			emit dataLoaded();
+			return true;
 		}
-
-		mFileName     = filename;
-		mLeft         = mMinX;
-		mRight        = mMaxX;
-		mBottom       = mMinY;
-		mTop          = mMaxY;
-		mModified     = false;
-		mRenameNeeded = true;
-
-		emit updateProgressShow(false);
-		emit modifiedChanged(false);
-		emit dataLoaded();
-		return true;
 	}
 
 	return false;
