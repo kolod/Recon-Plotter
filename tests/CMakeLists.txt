@@ -59,6 +59,7 @@ else()
 endif()
 
 target_link_libraries(test_002 PRIVATE Qt${QT_VERSION_MAJOR}::Test)
+target_link_libraries(test_002 PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
 
 if(QT_VERSION_MAJOR EQUAL 6)
 	qt_finalize_executable(test_002)

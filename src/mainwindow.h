@@ -26,6 +26,7 @@
 #include "recontextfile.h"
 #include "chartwindow.h"
 #include "signalsmodel.h"
+#include "colordelegate.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui
@@ -62,6 +63,7 @@ private:
 	Ui::MainWindow *ui;
 	SignalsModel *mSignalsModel;
 	QLocalServer *mServer;
+    ColorDelegate *mColorDelegate;
 
 	ChartWindow *activeMdiChild() const;
     bool isFileAlreadyOpen(const QString filename);

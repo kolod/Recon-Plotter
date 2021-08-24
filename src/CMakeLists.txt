@@ -39,7 +39,9 @@ set(PROJECT_SOURCES
 	chartwindow.h
 	chartwindow.cpp
 	signalsmodel.h
-	signalsmodel.cpp
+        signalsmodel.cpp
+        colordelegate.h
+        colordelegate.cpp
 	mainwindow.cpp
 	mainwindow.h
 	mainwindow.ui

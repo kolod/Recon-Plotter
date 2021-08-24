@@ -37,12 +37,12 @@ if(ANDROID)
 endif()
 
 find_package(QT NAMES Qt5 Qt6 REQUIRED
-	COMPONENTS Widgets Network PrintSupport LinguistTools
+        COMPONENTS Widgets Network PrintSupport LinguistTools Gui
 	OPTIONAL_COMPONENTS Test
 )
 
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED
-	COMPONENTS Widgets Network PrintSupport LinguistTools
+        COMPONENTS Widgets Network PrintSupport LinguistTools Gui
 	OPTIONAL_COMPONENTS Test
 )
 

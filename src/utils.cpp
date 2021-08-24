@@ -22,19 +22,18 @@
 #include <QFileInfo>
 #include <QStringList>
 #include <QSettings>
-//#include <QApplication>
 #include <QRegularExpression>
 #include "utils.h"
 
 double prettyFloor(double value, int places) {
-    if (qIsNull(value) || !qIsFinite(value)) return value;
+	if (qIsNull(value) || !qIsFinite(value)) return value;
 	double f = std::pow(10, std::round(std::log10(std::fabs(value))) - places + 1);
 	double result = std::floor(value / f) * f;
 	return result;
 }
 
 double prettyCeil(double value, int places) {
-    if (qIsNull(value) || !qIsFinite(value)) return value;
+	if (qIsNull(value) || !qIsFinite(value)) return value;
 	double f = std::pow(10, std::round(std::log10(std::fabs(value))) - places + 1);
 	double result = std::ceil(value / f) * f;
 	return result;
@@ -99,6 +98,38 @@ void multyply(QVector<double> &data, const double multiplier)
 QString str2key(QString value)
 {
 	return value.toLower().replace(QRegularExpression("\\s+"), "_");
+}
+
+double luminance(const QColor color)
+{
+	return 0.2126 * color.redF() + 0.7152 * color.greenF() + 0.0722 * color.blueF();
+}
+
+bool isLight(const QColor color)
+{
+	return luminance(color) > 0.179;
+}
+
+bool isLighter(const QColor color1, const QColor color2)
+{
+	return luminance(color1) > luminance(color2);
+}
+
+bool isLightPalette(const QPalette palette)
+{
+	const QColor base = palette.color(QPalette::Active, QPalette::Base);
+	const QColor text = palette.color(QPalette::Active, QPalette::Text);
+	return isLighter(base, text);
+}
+
+QPalette::ColorRole prettyTextColorRole(QColor background)
+{
+	return (isLight(background) ^ isLightPalette()) ? QPalette::Base : QPalette::Text;
+}
+
+QColor prettyTextColor(const QColor background, const QPalette palette)
+{
+	return palette.color(QPalette::Active, prettyTextColorRole(background));
 }
 
 #ifdef WIN32

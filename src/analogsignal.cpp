@@ -26,19 +26,13 @@ AnalogSignal::AnalogSignal(QObject *parent)
 
 QString AnalogSignal::name(const bool legend) const
 {
-	if (legend)
-	{
-		if (mScale == 1.0)
-		{
+	if (legend) {
+		if (mScale == 1.0) {
 			return QString("%1, %2").arg(mName, mUnit);
-		}
-		else
-		{
+		} else {
 			return QString("%1, %2 × %3").arg(mName, mUnit).arg(mScale);
 		}
-	}
-	else
-	{
+	} else {
 		return mName;
 	}
 }
@@ -54,51 +48,40 @@ void AnalogSignal::clear()
 
 void AnalogSignal::invert()
 {
-	for (qsizetype i = 0; i < mData.count(); i++)
-		mData[i] *= -1.0;
+	for (qsizetype i = 0; i < mData.count(); i++) mData[i] *= -1.0;
 }
 
-void AnalogSignal::calculateLimits()
-{
+void AnalogSignal::calculateLimits() {
 	mMinY = qInf();
 	mMaxY = -qInf();
 
-	foreach (qreal val, mData)
-	{
+	foreach (qreal val, mData) {
 		mMinY = qMin(mMinY, val);
 		mMaxY = qMax(mMaxY, val);
 	}
 }
 
-QVector<double> &AnalogSignal::smoothed()
-{
+QVector<double> &AnalogSignal::smoothed() {
 	double multiplier = mFactor * mScale;
 
 	if ((mDataCache.count() != mData.count()) ||
 		(multiplier != mMutyplierCache) ||
-		(mSmooth != mSmoothCache))
-	{
+		(mSmooth != mSmoothCache)
+	){
 		mDataCache.clear();
 		mDataCache.reserve(mData.count());
 
-		if (mSmooth > 1)
-		{
+		if (mSmooth > 1) {
 			qreal value = 0.0;
 			QQueue<qreal> buffer;
 
-			for (qsizetype i = 0; i < qMin(mData.count(), mTime->count()); i++)
-			{
+			for (qsizetype i = 0; i < qMin(mData.count(), mTime->count()); i++) {
 				value += mData.at(i);
 				buffer.enqueue(mData.at(i));
-				if (buffer.count() > static_cast<int>(mSmooth))
-					value -= buffer.dequeue();
-				{
-					mDataCache.append(value / buffer.count());
-				}
+				if (buffer.count() > static_cast<int>(mSmooth)) value -= buffer.dequeue();
+				mDataCache.append(value / buffer.count());
 			}
-		}
-		else
-		{
+		} else {
 			mDataCache = mData;
 		}
 
@@ -110,10 +93,7 @@ QVector<double> &AnalogSignal::smoothed()
 
 QString AnalogSignal::toString()
 {
-	return QString("Name:\t%1\nUnit:\t%2\nScale:\t%3\nSmoth:\t%4")
-		.arg(mName)
-		.arg(mUnit, mScale)
-		.arg(mSmooth);
+	return QString("Name:\t%1\nUnit:\t%2\nScale:\t%3\nSmoth:\t%4").arg(mName).arg(mUnit, mScale).arg(mSmooth);
 }
 
 bool AnalogSignal::saveToStream(QDataStream &stream) const
@@ -130,13 +110,10 @@ bool AnalogSignal::saveToStream(QDataStream &stream) const
 		<< mColor.name()
 		<< static_cast<quint64>(mData.count());
 
-	for (qreal value : qAsConst(mData))
-	{
-		stream << value;
-	};
-
+	for (qreal value : qAsConst(mData)) stream << value;
 	return true;
 }
+
 bool AnalogSignal::loadFromStream(QDataStream &stream)
 {
 	QString colorname;
@@ -149,8 +126,7 @@ bool AnalogSignal::loadFromStream(QDataStream &stream)
 
 	mData.clear();
 	mData.reserve(count);
-	for (int i = count; i; i--)
-	{
+	for (int i = count; i; i--) {
 		stream >> value;
 		mData.append(value);
 	}

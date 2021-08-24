@@ -142,10 +142,10 @@ bool ReconTextFile::importFile(QString filename)
 			calculateLimits();
 			resetWindow();
 
-            mFileName = filename;
-            setModified(false);
+			mFileName = filename;
+			setModified(false);
 
-            emit updateProgressShow(false);
+			emit updateProgressShow(false);
 			emit dataLoaded();
 			return true;
 		}

@@ -37,12 +37,18 @@
 MainWindow::MainWindow(QWidget *parent)
 	: QMainWindow(parent)
 	, ui(new Ui::MainWindow)
+	, mSignalsModel(nullptr)
+	, mServer(nullptr)
+	, mColorDelegate(nullptr)
 {
 	ui->setupUi(this);
 
 #ifndef WIN32
-    setWindowIcon(QIcon(":/icons/appicon.svg"));
+	setWindowIcon(QIcon(":/icons/appicon.svg"));
 #endif
+
+	mColorDelegate = new ColorDelegate(this);
+	ui->tableSignals->setItemDelegateForColumn(7, mColorDelegate);
 
 	connect(ui->menuWindow, &QMenu::aboutToShow, this, &MainWindow::updateWindowMenu);
 	connect(ui->menuPlot, &QMenu::aboutToShow, this, &MainWindow::updatePlotMenu);
@@ -96,23 +102,23 @@ MainWindow::MainWindow(QWidget *parent)
 			QPointer<QLocalSocket> localSocket = mServer->nextPendingConnection();
 			if (!localSocket) break;
 
-            raise();
-            activateWindow();
+			raise();
+			activateWindow();
 
 			connect(localSocket, &QLocalSocket::disconnected, localSocket, &QLocalSocket::deleteLater);
 			connect(localSocket, &QLocalSocket::readyRead, this, [this, localSocket](){
 				while (localSocket->canReadLine()) {
 					auto line = QString::fromUtf8(localSocket->readLine());
-                    qDebug() << "Read from local connection:" << line;
+					qDebug() << "Read from local connection:" << line;
 					openFile(line.simplified());
 				}
 			});
 		}
 	});
 
-    mServer->listen(str2key(qApp->applicationName()));
+	mServer->listen(str2key(qApp->applicationName()));
 
-    qDebug() << "Opened local socket:" << mServer->fullServerName();
+	qDebug() << "Opened local socket:" << mServer->fullServerName();
 }
 
 MainWindow::~MainWindow()
@@ -136,7 +142,7 @@ void MainWindow::restoreSession()
 	restoreGeometry(settings.value("geometry").toByteArray());
 	restoreState(settings.value("state").toByteArray());
 
-    foreach (auto filename, filesFromSettings("OpenedFiles")) openFile(filename);
+	foreach (auto filename, filesFromSettings("OpenedFiles")) openFile(filename);
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
@@ -287,10 +293,10 @@ void MainWindow::updateFileMenu()
 	}
 
 	// Add items
-    foreach (auto filename, filesFromSettings("Recent")) {
-        auto *action = new QAction(filename);
-        connect(action, &QAction::triggered, this, [this, filename](){openFile(filename);});
-        ui->menuOpenRecent->addAction(action);
+	foreach (auto filename, filesFromSettings("Recent")) {
+		auto *action = new QAction(filename);
+		connect(action, &QAction::triggered, this, [this, filename](){openFile(filename);});
+		ui->menuOpenRecent->addAction(action);
 	}
 
 	// Disable menu if no recent files found
@@ -313,7 +319,7 @@ void MainWindow::updatePlotMenu()
 }
 
 bool MainWindow::openFile(const QString filename) {
-    if (isFileAlreadyOpen(filename)) return false;  //TODO: Add message
+	if (isFileAlreadyOpen(filename)) return false;  //TODO: Add message
 
 	DataFile *datafile = new DataFile(this);
 
@@ -331,7 +337,7 @@ bool MainWindow::openFile(const QString filename) {
 }
 
 bool MainWindow::importReconTextFile(QString filename) {
-    if (isFileAlreadyOpen(filename)) return false;  //TODO: Add message
+	if (isFileAlreadyOpen(filename)) return false;  //TODO: Add message
 
 	auto *datafile = new ReconTextFile(this);
 
@@ -363,36 +369,36 @@ ChartWindow *MainWindow::activeMdiChild() const {
 }
 
 bool MainWindow::isFileAlreadyOpen(const QString filename) {
-    foreach (auto *child, ui->mdiArea->subWindowList()) {
-        QPointer<ChartWindow> chartwindow = qobject_cast<ChartWindow*>(child);
-        if (chartwindow != nullptr) {
-            QPointer<DataFile> datafile = chartwindow->dataFile();
-            if (datafile) {
-                if (filename == datafile->fileName()) {
-                    qDebug() << "File already opened:" << filename;
-                    chartwindow->activateWindow();
-                    return true;
-                }
-            }
-        }
-    }
+	foreach (auto *child, ui->mdiArea->subWindowList()) {
+		QPointer<ChartWindow> chartwindow = qobject_cast<ChartWindow*>(child);
+		if (chartwindow != nullptr) {
+			QPointer<DataFile> datafile = chartwindow->dataFile();
+			if (datafile) {
+				if (filename == datafile->fileName()) {
+					qDebug() << "File already opened:" << filename;
+					chartwindow->activateWindow();
+					return true;
+				}
+			}
+		}
+	}
 
-    return false;
+	return false;
 }
 
 QStringList MainWindow::filesFromSettings(QString option) {
-    QSettings settings;
-    auto recentfiles = settings.value(option).toStringList();
-    auto count = recentfiles.count();
+	QSettings settings;
+	auto recentfiles = settings.value(option).toStringList();
+	auto count = recentfiles.count();
 
-    recentfiles.removeDuplicates();
-    foreach (auto filename, recentfiles) {
-        QFileInfo fi(filename);
-        if (!fi.exists()) recentfiles.removeOne(filename);
-    }
+	recentfiles.removeDuplicates();
+	foreach (auto filename, recentfiles) {
+		QFileInfo fi(filename);
+		if (!fi.exists()) recentfiles.removeOne(filename);
+	}
 
-    if (count != recentfiles.count())
-        settings.setValue(option, recentfiles);
+	if (count != recentfiles.count())
+		settings.setValue(option, recentfiles);
 
-    return recentfiles;
+	return recentfiles;
 }

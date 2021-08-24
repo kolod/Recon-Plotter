@@ -29,7 +29,7 @@ DataFile::DataFile(QObject *parent)
 	: QObject(parent)
 	, mFileName("")
 	, mTime()
-    , mModified(false)
+	, mModified(false)
 	, mCansel(false)
 {}
 
@@ -52,8 +52,8 @@ void DataFile::calculateLimits()
 
 void DataFile::resetWindow()
 {
-    if (!qIsFinite(mMinX) || !qIsFinite(mMaxX) || !qIsFinite(mMinY) || !qIsFinite(mMaxY))
-        calculateLimits();
+	if (!qIsFinite(mMinX) || !qIsFinite(mMaxX) || !qIsFinite(mMinY) || !qIsFinite(mMaxY))
+		calculateLimits();
 
 	mLeft   = prettyFloor(mMinX);
 	mRight  = prettyCeil(mMaxX);
@@ -111,8 +111,8 @@ bool DataFile::saveAs(QString filename)
 	}
 
 	if (datafile.write(qCompress(data)) > 0) {
-        mFileName = filename;
-        setModified(false);
+		mFileName = filename;
+		setModified(false);
 		return true;
 	}
 
@@ -189,7 +189,7 @@ bool DataFile::open(QString filename)
 	}
 
 	mFileName = filename;
-    setModified(false);
+	setModified(false);
 
 	return true;
 }

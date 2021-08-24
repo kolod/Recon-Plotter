@@ -42,24 +42,24 @@ int main(int argc, char *argv[])
 
 	a.setApplicationName("Recon Plotter");
 	a.setOrganizationName("Alexandr Kolodkin");
-    a.setApplicationVersion("1.0");
+	a.setApplicationVersion("1.0");
 
-    QCommandLineParser parser;
-    parser.setApplicationDescription("Recon Plotter");
-    parser.addHelpOption();
-    parser.addVersionOption();
-    parser.addPositionalArgument("file", a.translate("main", "The file to open."), "[file...]");
-    parser.process(a);
+	QCommandLineParser parser;
+	parser.setApplicationDescription("Recon Plotter");
+	parser.addHelpOption();
+	parser.addVersionOption();
+	parser.addPositionalArgument("file", a.translate("main", "The file to open."), "[file...]");
+	parser.process(a);
 
-    auto files = parser.positionalArguments();
-    if (trySendFilesPreviouslyOpenedApplication(files)) return 0;
+	auto files = parser.positionalArguments();
+	if (trySendFilesPreviouslyOpenedApplication(files)) return 0;
 
-    a.setStyle(QStyleFactory::create("Fusion"));
+	a.setStyle(QStyleFactory::create("Fusion"));
 
 	registerFileAsossiation("plot");
 
 	QTranslator qtTranslator;
-    if (qtTranslator.load(
+	if (qtTranslator.load(
 		QLocale(),
 		QLatin1String("qt"),
 		QLatin1String("_"),
@@ -82,7 +82,7 @@ int main(int argc, char *argv[])
 		qDebug() << "Application translator installed.";
 	} else {
 		qDebug() << "Application translator not found.";
-    }
+	}
 
 	MainWindow w;
 

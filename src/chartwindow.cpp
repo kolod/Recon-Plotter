@@ -14,176 +14,177 @@
 //    You should have received a copy of the GNU General Public License
 //    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include "chartwindow.h"
 
 #include <QDebug>
-#include <QFileInfo>
 #include <QLayout>
 #include <QMargins>
-#include <QMdiSubWindow>
-#include <QMessageBox>
 #include <QPointer>
+#include <QFileInfo>
+#include <QMessageBox>
+#include <QMdiSubWindow>
 #include <QPrintPreviewDialog>
-
-#include "analogsignal.h"
 #include "utils.h"
+#include "analogsignal.h"
+#include "chartwindow.h"
 
 ChartWindow::ChartWindow(QWidget *parent, Qt::WindowFlags flags)
-    : QMdiSubWindow(parent, flags), mDataFile(nullptr) {
-    setAttribute(Qt::WA_DeleteOnClose, true);
+	: QMdiSubWindow(parent, flags)
+	, mDataFile(nullptr)
+{
+	setAttribute(Qt::WA_DeleteOnClose, true);
 
-    mChartView.setInteractions(QCP::iRangeDrag | QCP::iRangeZoom |
-                               QCP::iSelectPlottables | QCP::iMultiSelect);
-    mChartView.xAxis->setLabel(tr("Time, s"));
-    mChartView.yAxis->setLabel(tr("Voltage, V"));
+	mCustomPlot.setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables | QCP::iMultiSelect);
+	mCustomPlot.xAxis->setLabel(tr("Time, s"));
+	mCustomPlot.yAxis->setLabel(tr("Voltage, V"));
 
-    setWidget(&mChartView);
+	setWidget(&mCustomPlot);
 }
 
 void ChartWindow::closeEvent(QCloseEvent *event) {
-    if (maybeSave()) {
-        QMdiSubWindow::closeEvent(event);
-        event->accept();
-    } else {
-        event->ignore();
-    }
+	if (maybeSave()) {
+		QMdiSubWindow::closeEvent(event);
+		event->accept();
+	} else {
+		event->ignore();
+	}
 }
 
 void ChartWindow::setDataFile(DataFile *datafile) {
-    if (mDataFile != nullptr) delete mDataFile;
+	if (mDataFile != nullptr) delete mDataFile;
 
-    mDataFile = datafile;
+	mDataFile = datafile;
 
-    if (mDataFile != nullptr) {
-        connect(mDataFile, &DataFile::modifiedChanged, this,
-                &QMdiSubWindow::setWindowModified);
-        setWindowTitle(mDataFile->fileName() + "[*]");
-    }
+	if (mDataFile != nullptr) {
+		connect(mDataFile, &DataFile::modifiedChanged, this, &QMdiSubWindow::setWindowModified);
+		setWindowTitle(mDataFile->fileName() + "[*]");
+
+		connect(mDataFile, &DataFile::selectedChanged, this, [this](qsizetype channel, bool state) {
+			auto *graph = findGraph(mDataFile->analogSignal(channel)->name(true));
+			if (graph != nullptr) {
+				graph->setVisible(state);
+				mCustomPlot.replot();
+			} else {
+				refresh();
+			}
+		});
+
+		connect(mDataFile, &DataFile::colorChanged, this, [this](qsizetype channel, QColor color) {
+			auto *graph = findGraph(mDataFile->analogSignal(channel)->name(true));
+			if (graph != nullptr) {
+				graph->setPen(QPen(color));
+				mCustomPlot.replot();
+			} else {
+				refresh();
+			}
+		});
+	}
 }
 
 QString ChartWindow::userFriendlyCurrentFile() {
-    return QFileInfo(mDataFile->fileName()).fileName();
+	return QFileInfo(mDataFile->fileName()).fileName();
 };
 
 bool ChartWindow::maybeSave() {
-    if (mDataFile->isModified()) {
-        switch (QMessageBox::warning(
-            this, tr("Recon Plotter"),
-            tr("'%1' has been modified.\nDo you want to save your changes?")
-                .arg(mDataFile->fileName()),
-            QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel)) {
-            case QMessageBox::Save:
-                save();
-                return true;
-            case QMessageBox::Cancel:
-                return false;
-            default:
-                break;
-        }
-    }
-    return true;
+	if (mDataFile->isModified()) {
+		switch (QMessageBox::warning(
+			this, tr("Recon Plotter"),
+			tr("'%1' has been modified.\nDo you want to save your changes?").arg(mDataFile->fileName()),
+			QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel
+		)) {
+		case QMessageBox::Save:
+			save();
+			return true;
+		case QMessageBox::Cancel:
+			return false;
+		default:
+			break;
+		}
+	}
+	return true;
 }
 
 void ChartWindow::save() {
-    if (mDataFile != nullptr) {
-        if (mDataFile->isRenameNeeded()) {
-            saveAs();
-        } else {
-            if (mDataFile->save()) {
-                addToRecent(mDataFile->fileName());
-            }
-        }
-    }
+	if (mDataFile != nullptr) {
+		if (mDataFile->isRenameNeeded()) {
+			saveAs();
+		} else {
+			if (mDataFile->save()) {
+				addToRecent(mDataFile->fileName());
+			}
+		}
+	}
 }
 
 void ChartWindow::saveAs() {
-    if (mDataFile != nullptr) {
-        QFileDialog *dialog = new QFileDialog(this);
+	if (mDataFile != nullptr) {
+		QFileDialog *dialog = new QFileDialog(this);
 
-        dialog->setNameFilter("Plot Data File (*.plot)");
-        dialog->setAcceptMode(QFileDialog::AcceptSave);
-        dialog->setWindowTitle(tr("Save Plot Data File"));
-        dialog->selectFile(fixFileSuffix(mDataFile->fileName(), "plot"));
+		dialog->setNameFilter("Plot Data File (*.plot)");
+		dialog->setAcceptMode(QFileDialog::AcceptSave);
+		dialog->setWindowTitle(tr("Save Plot Data File"));
+		dialog->selectFile(fixFileSuffix(mDataFile->fileName(), "plot"));
 
-        connect(dialog, &QFileDialog::accepted, this, [this, dialog]() {
-            auto files = dialog->selectedFiles();
-            if (!files.isEmpty())
-                if (mDataFile->saveAs(files.first()))
-                    addToRecent(files.first());
-        });
+		connect(dialog, &QFileDialog::accepted, this, [this, dialog]() {
+			auto files = dialog->selectedFiles();
+			if (!files.isEmpty())
+				if (mDataFile->saveAs(files.first()))
+					addToRecent(files.first());
+		});
 
-        dialog->open();
-    }
+		dialog->open();
+	}
 }
 
 void ChartWindow::refresh() {
-    mChartView.clearGraphs();
-    mChartView.xAxis->setRange(mDataFile->left(), mDataFile->right());
-    mChartView.yAxis->setRange(mDataFile->bottom(), mDataFile->top());
-    mChartView.legend->setVisible(true);
+	mCustomPlot.clearGraphs();
+	mCustomPlot.xAxis->setRange(mDataFile->left(), mDataFile->right());
+	mCustomPlot.yAxis->setRange(mDataFile->bottom(), mDataFile->top());
+	mCustomPlot.legend->setVisible(true);
 
-    for (qsizetype i = 0; i < mDataFile->analogSignalsCount(); i++) {
-        auto *signal = mDataFile->analogSignal(i);
-        if (signal->selected()) {
-            auto *graph = mChartView.addGraph();
-            graph->setData(mDataFile->time(), signal->smoothed(), true);
-            graph->setName(signal->name(true));
-            graph->setPen(QPen(signal->color()));
-            graph->setVisible(true);
-        }
-    }
+	for (qsizetype i = 0; i < mDataFile->analogSignalsCount(); i++) {
+		auto *signal = mDataFile->analogSignal(i);
+		if (signal->selected()) {
+			auto *graph = mCustomPlot.addGraph();
+			graph->setData(mDataFile->time(), signal->smoothed(), true);
+			graph->setName(signal->name(true));
+			graph->setPen(QPen(signal->color()));
+			graph->setVisible(true);
+		}
+	}
 
-    mChartView.replot();
+	mCustomPlot.replot();
 }
 
 void ChartWindow::print() {
-    auto *dialog = new QPrintPreviewDialog(
-        this, Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint);
-    if (dialog != nullptr) {
-        QPrinter *printer = dialog->printer();
-        if (printer != nullptr) {
-            printer->setPageOrientation(QPageLayout::Landscape);
-            printer->setResolution(600);
-        }
+	auto *dialog = new QPrintPreviewDialog(this, Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint);
+	if (dialog != nullptr) {
+		QPrinter *printer = dialog->printer();
+		if (printer != nullptr) {
+			printer->setPageOrientation(QPageLayout::Landscape);
+			printer->setResolution(1200);
+		}
 
-        connect(dialog, &QPrintPreviewDialog::paintRequested, this,
-                [this](QPrinter *printer) {
-                    QCPPainter painter;
-                    painter.begin(printer);
-                    painter.setCompositionMode(
-                        QPainter::CompositionMode_SourceAtop);
+		connect(dialog, &QPrintPreviewDialog::paintRequested, this, [this](QPrinter *printer) {
+			QPainter painter;
+			painter.begin(printer);
+			auto rect = painter.window();
+			mCustomPlot.toPainter(&painter, rect.width(), rect.height());
+			painter.end();
+		});
 
-                    auto rect = printer->pageLayout().paintRectPixels(
-                        printer->resolution());
-                    // auto rect = printer->pageLayout().paintRectPoints();
+		dialog->open();
+	}
+}
 
-                    double factor = 1.00;
+QCPGraph *ChartWindow::findGraph(QString name) {
+	for (qsizetype i = 0; i < mCustomPlot.graphCount(); i++) {
+		auto graph = mCustomPlot.graph(i);
+		if (graph->name() == name) {
+			qDebug() << "Graph found:" << name;
+			return graph;
+		}
+	}
 
-                    painter.save();
-                    painter.scale(factor, factor);
-
-                    qDebug()
-                        << "Painter window            :" << painter.window()
-                        << Qt::endl
-                        << "Painter viewport          :" << painter.viewport()
-                        << Qt::endl
-                        << "Printer page size         :"
-                        << printer->pageLayout().pageSize() << Qt::endl
-                        << "Printer paint rect        :"
-                        << printer->pageLayout().paintRect() << Qt::endl
-                        << "Printer paint rect pixels :"
-                        << printer->pageLayout().paintRectPixels(
-                               printer->resolution())
-                        << Qt::endl
-                        << "Printer paint rect points :"
-                        << printer->pageLayout().paintRectPoints() << Qt::endl;
-
-                    mChartView.toPainter(&painter, rect.width(), rect.height());
-                    painter.restore();
-
-                    painter.end();
-                });
-
-        dialog->open();
-    }
+	qDebug() << "Graph not found:" << name;
+	return nullptr;
 }

@@ -14,34 +14,22 @@
 //    You should have received a copy of the GNU General Public License
 //    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include "localsocket.h"
+#pragma once
 
-QString localServerFullPath() {
-#ifdef WIN32
-	return "\\\\.\\pipe\\" + str2key(qApp->applicationName());
-#else
-	return QDir::tempPath() + "/" + str2key(qApp->applicationName());
-#endif
-}
+#include <QObject>
+#include <QPointer>
+#include <QColorDialog>
+#include <QStyledItemDelegate>
 
-bool trySendFilesPreviouslyOpenedApplication(const QStringList files) {
-	auto fullpath = localServerFullPath();
-	QLocalSocket localSocket;
-	localSocket.connectToServer(fullpath);
+class ColorDelegate : public QStyledItemDelegate
+{
+    Q_OBJECT
 
-	if (localSocket.waitForConnected(1000)) {
-		foreach (auto filename, files) {
-			qDebug() << "Send filename:" << filename;
-			localSocket.write(QString("%1\n").arg(filename).toUtf8());
-			localSocket.flush();
-		}
-		localSocket.close();
-		return true;
-	}
+public:
+    explicit ColorDelegate(QObject *parent = nullptr);
 
-	// Remove local server pipe if not connected
-	QFile f(fullpath);
-	if (f.exists()) f.remove();
+    QWidget *createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const override;
+    void setEditorData(QWidget *editor, const QModelIndex &index) const override;
+    void setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const override;
+};
 
-	return false;
-}

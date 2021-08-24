@@ -19,7 +19,6 @@
 #include <QObject>
 #include <QFile>
 #include <QList>
-#include <QtCharts/QLineSeries>
 #include "analogsignal.h"
 
 class DataFile : public QObject
@@ -58,6 +57,20 @@ public:
         emit modifiedChanged(modified);
 	}
 
+    void setSelected(qsizetype channel, bool selected) {
+        if (channel < mAnalogSignals.count()) {
+            mAnalogSignals.at(channel)->setSelected(selected);
+            emit selectedChanged(channel, selected);
+        }
+    }
+
+    void setColor(qsizetype channel, QColor color) {
+        if (channel < mAnalogSignals.count()) {
+            mAnalogSignals.at(channel)->setColor(color);
+            emit colorChanged(channel, color);
+        }
+    }
+
 public slots:
 	void cansel() {mCansel = true;}
 
@@ -87,4 +100,6 @@ signals:
 	void updateProgressRange(int min, int max);
 	void dataLoaded();
 	void modifiedChanged(bool modified);
+    void selectedChanged(qsizetype channel, bool state);
+    void colorChanged(qsizetype channel, QColor color);
 };

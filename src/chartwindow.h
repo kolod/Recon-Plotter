@@ -32,19 +32,21 @@ class ChartWindow : public QMdiSubWindow {
     DataFile *dataFile() const { return mDataFile; }
     QString userFriendlyCurrentFile();
     void setDataFile(DataFile *datafile = nullptr);
-    void refresh();
 
    public slots:
     void save();
     void saveAs();
     void print();
+    void refresh();
 
    protected:
     void closeEvent(QCloseEvent *event) override;
 
    private:
     DataFile *mDataFile;
-    QCustomPlot mChartView;
+    QCustomPlot mCustomPlot;
+
+    QCPGraph *findGraph(QString name);
 
     bool maybeSave();
 };

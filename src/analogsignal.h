@@ -20,7 +20,6 @@
 #include <QString>
 #include <QDataStream>
 #include <QColor>
-#include <QtCharts/QLineSeries>
 
 class AnalogSignal : public QObject
 {

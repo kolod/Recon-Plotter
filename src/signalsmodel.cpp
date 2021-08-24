@@ -16,6 +16,7 @@
 
 #include "signalsmodel.h"
 #include "analogsignal.h"
+#include "utils.h"
 
 enum class SignalsModelColumn {
 	Name,
@@ -117,6 +118,17 @@ QVariant SignalsModel::data(const QModelIndex &index, int role) const
 			case SignalsModelColumn::Name:     return 0;
 			default:                           return Qt::AlignCenter;
 		}
+	} else if (role == Qt::BackgroundRole) {
+		switch (static_cast<SignalsModelColumn>(index.column())) {
+		case SignalsModelColumn::Color: return QColor(signal->color());
+		default: break;
+		}
+	} else if (role == Qt::ForegroundRole) {
+		switch (static_cast<SignalsModelColumn>(index.column())) {
+		case SignalsModelColumn::Color:
+			return prettyTextColor(QColor(signal->color()));
+		default: break;
+		}
 	}
 
 	return QVariant();
@@ -124,23 +136,39 @@ QVariant SignalsModel::data(const QModelIndex &index, int role) const
 
 bool SignalsModel::setData(const QModelIndex &index, const QVariant &value, int role)
 {
-	if (data(index, role) != value) {
+	if ((data(index, role) != value) && (mDataFile != nullptr)) {
 		auto signal = mDataFile->analogSignal(index.row());
 		if ((role == Qt::DisplayRole) || (role == Qt::EditRole)) {
 			switch (static_cast<SignalsModelColumn>(index.column())) {
-				case SignalsModelColumn::Name:     signal->setName(value.toString());           break;
-				case SignalsModelColumn::Unit:     signal->setUnit(value.toString());           break;
-				case SignalsModelColumn::Factor:   signal->setFactor(value.toDouble());         break;
-				case SignalsModelColumn::Scale:    signal->setScale(value.toDouble());          break;
-				case SignalsModelColumn::Smooth:   signal->setSmooth(value.toDouble());         break;
-				case SignalsModelColumn::Color:    signal->setColor(QColor(value.toString()));  break;
-				case SignalsModelColumn::Minimum:                                               break;
-				case SignalsModelColumn::Maximum:                                               break;
+			case SignalsModelColumn::Name:
+				signal->setName(value.toString());
+				break;
+			case SignalsModelColumn::Unit:
+				signal->setUnit(value.toString());
+				break;
+			case SignalsModelColumn::Factor:
+				signal->setFactor(value.toDouble());
+				break;
+			case SignalsModelColumn::Scale:
+				signal->setScale(value.toDouble());
+				break;
+			case SignalsModelColumn::Smooth:
+				signal->setSmooth(value.toDouble());
+				break;
+			case SignalsModelColumn::Color:
+				mDataFile->setColor(index.row(), QColor(value.toString()));
+				break;
+			case SignalsModelColumn::Minimum:
+				break;
+			case SignalsModelColumn::Maximum:
+				break;
 			}
 		} else if (role == Qt::CheckStateRole) {
 			switch (static_cast<SignalsModelColumn>(index.column())) {
-				case SignalsModelColumn::Name: signal->setSelected(value.toBool());             break;
-				default:                                                                        break;
+			case SignalsModelColumn::Name:
+				mDataFile->setSelected(index.row(), value.toBool());
+				break;
+			default:;
 			}
 		}
 

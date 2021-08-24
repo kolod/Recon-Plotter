@@ -19,6 +19,9 @@
 #include <QString>
 #include <QRect>
 #include <QRectF>
+#include <QColor>
+#include <QPalette>
+#include <QApplication>
 
 double prettyFloor(double value, int places = 2);
 double prettyCeil(double value, int places = 2);
@@ -33,6 +36,13 @@ void addToRecent(QString filename);
 
 void multyply(QVector<double> &data, const double multiplier);
 QString str2key(QString value);
+
+double luminance(const QColor color);
+bool isLight(const QColor color);
+bool isLighter(const QColor color1, const QColor color2);
+bool isLightPalette(const QPalette palette = QApplication::palette());
+QPalette::ColorRole prettyTextColorRole(QColor background);
+QColor prettyTextColor(const QColor background, const QPalette palette = QApplication::palette());
 
 #ifdef WIN32
 void registerFileAsossiation(const QString suffix);
