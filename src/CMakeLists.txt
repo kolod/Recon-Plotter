@@ -92,6 +92,10 @@ else()
 	target_include_directories(${TARGET_NAME} BEFORE PUBLIC ${CMAKE_SOURCE_DIR}/qcustomplot/qcpplotter)
 endif()
 
+if(QCUSTOMPLOT_DEBUG_ELEMENTS_RECT)
+	target_compile_definitions(${TARGET_NAME} PUBLIC QCUSTOMPLOT_DEBUG_ELEMENTS_RECT)
+endif()
+
 add_dependencies(${TARGET_NAME} ${TARGET_NAME}_resources)
 
 target_link_libraries(${TARGET_NAME} PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)

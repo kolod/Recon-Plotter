@@ -22,7 +22,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 option(CODE_COVERAGE "Enable coverage reporting" ON)
 option(BUILD_TESTING "Build the testing tree" ON)
-#option(USE_QPLOTTER "Use QPlotter instead of QCPPlotter." ON)
+option(QCUSTOMPLOT_DEBUG_ELEMENTS_RECT "Debug code to draw all layout element rects" OFF)
 
 # QtCreator supports the following variables for Android, which are identical to qmake Android variables.
 # Check https://doc.qt.io/qt/deployment-android.html for more information.
@@ -38,12 +38,12 @@ if(ANDROID)
 endif()
 
 find_package(QT NAMES Qt5 Qt6 REQUIRED
-        COMPONENTS Widgets Network PrintSupport LinguistTools Gui
+		COMPONENTS Widgets Network PrintSupport LinguistTools Gui
 	OPTIONAL_COMPONENTS Test
 )
 
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED
-        COMPONENTS Widgets Network PrintSupport LinguistTools Gui
+		COMPONENTS Widgets Network PrintSupport LinguistTools Gui
 	OPTIONAL_COMPONENTS Test
 )
 
