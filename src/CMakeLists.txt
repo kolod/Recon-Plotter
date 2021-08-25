@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.12)
 
-project(application VERSION 0.1 LANGUAGES CXX)
+project(${TARGET_NAME} VERSION 0.1 LANGUAGES CXX)
 
 set(TS_FILES
 	resources/i18n/recon-plotter_ru.ts
@@ -22,6 +22,20 @@ if(NOT WIN32)
 	list(APPEND QRC_FILES resources/linuxresources.qrc)
 endif()
 
+if(USE_QPLOTTER)
+	message(STATUS "Use QPlotter")
+	set(QCUSTOMPLOT_SOURCES
+		../qcustomplot/qplotter/qcustomplot.h
+		../qcustomplot/qplotter/qcustomplot.cpp
+	)
+else()
+	message(STATUS "Use QCPPlotter")
+	set(QCUSTOMPLOT_SOURCES
+		../qcustomplot/qcpplotter/qcustomplot.h
+		../qcustomplot/qcpplotter/qcustomplot.cpp
+	)
+endif()
+
 set(PROJECT_SOURCES
 	main.cpp
 	utils.h
@@ -39,14 +53,16 @@ set(PROJECT_SOURCES
 	chartwindow.h
 	chartwindow.cpp
 	signalsmodel.h
-        signalsmodel.cpp
-        colordelegate.h
-        colordelegate.cpp
+	signalsmodel.cpp
+	colordelegate.h
+	colordelegate.cpp
 	mainwindow.cpp
 	mainwindow.h
 	mainwindow.ui
-	qcustomplot.h
-	qcustomplot.cpp
+	settingsdialog.h
+	settingsdialog.cpp
+	settingsdialog.ui
+	${QCUSTOMPLOT_SOURCES}
 )
 
 if(WIN32)
@@ -54,33 +70,40 @@ if(WIN32)
 endif()
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
-	qt_add_binary_resources(resources ${QRC_FILES})
+	qt_add_binary_resources(${TARGET_NAME}_resources ${QRC_FILES})
 	qt_add_resources(PROJECT_SOURCES ${QRC_FILES})
-	qt_add_executable(application MANUAL_FINALIZATION ${PROJECT_SOURCES})
+	qt_add_executable(${TARGET_NAME} MANUAL_FINALIZATION ${PROJECT_SOURCES})
 	qt_create_translation(QM_FILES ${CMAKE_SOURCE_DIR} ${TS_FILES})
 else()
-	qt5_add_binary_resources(resources ${QRC_FILES})
+	qt5_add_binary_resources(${TARGET_NAME}_resources ${QRC_FILES})
 	qt5_add_resources(PROJECT_SOURCES ${QRC_FILES})
 	if(ANDROID)
-		add_library(application SHARED ${PROJECT_SOURCES})
+		add_library(${TARGET_NAME} SHARED ${PROJECT_SOURCES})
 	else()
-		add_executable(application ${PROJECT_SOURCES})
+		add_executable(${TARGET_NAME} ${PROJECT_SOURCES})
 	endif()
 	qt5_create_translation(QM_FILES ${CMAKE_SOURCE_DIR} ${TS_FILES})
 endif()
 
-add_dependencies(application resources)
+if(USE_QPLOTTER)
+	target_include_directories(${TARGET_NAME} BEFORE PUBLIC ${CMAKE_SOURCE_DIR}/qcustomplot/qplotter)
+	target_compile_definitions(${TARGET_NAME} PUBLIC "QCPPainter=QPainter")
+else()
+	target_include_directories(${TARGET_NAME} BEFORE PUBLIC ${CMAKE_SOURCE_DIR}/qcustomplot/qcpplotter)
+endif()
 
-target_link_libraries(application PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
-target_link_libraries(application PRIVATE Qt${QT_VERSION_MAJOR}::Network)
-target_link_libraries(application PRIVATE Qt${QT_VERSION_MAJOR}::PrintSupport)
+add_dependencies(${TARGET_NAME} ${TARGET_NAME}_resources)
 
-set_target_properties(application PROPERTIES
+target_link_libraries(${TARGET_NAME} PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
+target_link_libraries(${TARGET_NAME} PRIVATE Qt${QT_VERSION_MAJOR}::Network)
+target_link_libraries(${TARGET_NAME} PRIVATE Qt${QT_VERSION_MAJOR}::PrintSupport)
+
+set_target_properties(${TARGET_NAME} PROPERTIES
 	MACOSX_BUNDLE_GUI_IDENTIFIER my.example.com
 	MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
 	MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
 )
 
 if(QT_VERSION_MAJOR EQUAL 6)
-	qt_finalize_executable(application)
+	qt_finalize_executable(${TARGET_NAME})
 endif()

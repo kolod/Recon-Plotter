@@ -33,6 +33,7 @@
 #include "mainwindow.h"
 #include "utils.h"
 #include "./ui_mainwindow.h"
+#include "settingsdialog.h"
 
 MainWindow::MainWindow(QWidget *parent)
 	: QMainWindow(parent)
@@ -75,6 +76,11 @@ MainWindow::MainWindow(QWidget *parent)
 	connect(ui->actionImport,         &QAction::triggered, this, &MainWindow::import);
 	connect(ui->actionFullscreenMode, &QAction::toggled,   this, &MainWindow::fullScreen);
 	connect(ui->actionAboutQt,        &QAction::triggered, this, [](){qApp->aboutQt();});
+
+	connect(ui->actionSettings,       &QAction::triggered, this, [](){
+		auto dialog = new SettingsDialog();
+		dialog->open();
+	});
 
 	connect(ui->actionPrint,          &QAction::triggered, this, [this](){
 		QPointer<ChartWindow> child = activeMdiChild();
@@ -142,7 +148,9 @@ void MainWindow::restoreSession()
 	restoreGeometry(settings.value("geometry").toByteArray());
 	restoreState(settings.value("state").toByteArray());
 
-	foreach (auto filename, filesFromSettings("OpenedFiles")) openFile(filename);
+	if (settings.value("Restore", true).toBool()) {
+		foreach (auto filename, filesFromSettings("OpenedFiles")) openFile(filename);
+	}
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)

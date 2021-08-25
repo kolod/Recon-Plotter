@@ -14,6 +14,7 @@
 //    You should have received a copy of the GNU General Public License
 //    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+#include <QSettings>
 #include "localsocket.h"
 
 QString localServerFullPath() {
@@ -25,6 +26,11 @@ QString localServerFullPath() {
 }
 
 bool trySendFilesPreviouslyOpenedApplication(const QStringList files) {
+	QSettings settings;
+
+	// Skip if option disabled
+	if (!settings.value("OnlyOne", true).toBool()) return false;
+
 	auto fullpath = localServerFullPath();
 	QLocalSocket localSocket;
 	localSocket.connectToServer(fullpath);

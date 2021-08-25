@@ -165,11 +165,13 @@ void ChartWindow::print() {
 		}
 
 		connect(dialog, &QPrintPreviewDialog::paintRequested, this, [this](QPrinter *printer) {
-			QPainter painter;
-			painter.begin(printer);
-			auto rect = painter.window();
-			mCustomPlot.toPainter(&painter, rect.width(), rect.height());
-			painter.end();
+			if (printer != nullptr) {
+				QCPPainter painter;
+				painter.begin(printer);
+				auto rect = painter.window();
+				mCustomPlot.toPainter(&painter, rect.width(), rect.height());
+				painter.end();
+			}
 		});
 
 		dialog->open();

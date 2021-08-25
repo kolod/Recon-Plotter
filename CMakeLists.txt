@@ -22,6 +22,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 option(CODE_COVERAGE "Enable coverage reporting" ON)
 option(BUILD_TESTING "Build the testing tree" ON)
+#option(USE_QPLOTTER "Use QPlotter instead of QCPPlotter." ON)
 
 # QtCreator supports the following variables for Android, which are identical to qmake Android variables.
 # Check https://doc.qt.io/qt/deployment-android.html for more information.
@@ -46,7 +47,12 @@ find_package(Qt${QT_VERSION_MAJOR} REQUIRED
 	OPTIONAL_COMPONENTS Test
 )
 
-add_subdirectory(src)
+set(TARGET_NAME application_qcppainter)
+add_subdirectory(src ${CMAKE_BINARY_DIR}/QCPPainter)
+
+set(TARGET_NAME application_qpainter)
+set(USE_QPLOTTER ON)
+add_subdirectory(src ${CMAKE_BINARY_DIR}/QPainter)
 
 if(BUILD_TESTING)
 	enable_testing()
